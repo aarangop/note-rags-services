@@ -9,11 +9,10 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from app.models.events import EventType, FileChangeEvent
+from app.routes.events import process_file_change
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.models.events import EventType, FileChangeEvent
-from api.routes.events import process_file_change
 
 
 class TestProcessFileChange:

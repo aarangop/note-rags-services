@@ -2,7 +2,7 @@ from typing import List
 
 from langchain_openai import OpenAIEmbeddings
 
-from api.config import config
+from app.config import config
 
 
 def get_embeddings_model() -> OpenAIEmbeddings:

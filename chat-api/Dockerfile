@@ -5,15 +5,18 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
+# Copy the db package first (this is the dependency)
+COPY db/ ../db/
+
 # Copy project files
-COPY pyproject.toml ./
-COPY uv.lock ./
+COPY chat-api/pyproject.toml ./
+COPY chat-api/uv.lock ./
 
 # Install dependencies
 RUN uv sync
 
 # Copy source code
-COPY . .
+COPY chat-api/app/ ./app/
 
 # Expose port
 EXPOSE 8000

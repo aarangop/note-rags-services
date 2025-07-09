@@ -7,9 +7,8 @@ These tests verify that the endpoint works correctly with FastAPI's test client.
 from unittest.mock import Mock, patch
 
 import pytest
+from app.main import app
 from fastapi.testclient import TestClient
-
-from api.main import app
 
 
 @pytest.fixture

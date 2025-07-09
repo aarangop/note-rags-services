@@ -6,9 +6,8 @@ from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
+from app.models.events import EventType, FileChangeEvent
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.models.events import EventType, FileChangeEvent
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.10-slim
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -12,13 +12,20 @@ RUN pip install uv
 COPY --chown=appuser:appuser pyproject.toml ./
 COPY --chown=appuser:appuser uv.lock ./
 
-# Install dependencies
+# Copy environment file for development
+COPY --chown=appuser:appuser .env ./
+
+# Create all necessary directories with proper permissions before switching to appuser
+RUN mkdir -p /home/appuser/.cache \
+    && mkdir -p /home/appuser/.local/share/uv \
+    && mkdir -p /home/appuser/.local/state/uv \
+    && chown -R appuser:appuser /home/appuser
+
+# Install dependencies (still as root)
 RUN uv sync
 
 # Copy only necessary source code (exclude sensitive files)
 COPY --chown=appuser:appuser app/ ./app/
-# Add other specific directories as needed
-# COPY --chown=appuser:appuser static/ ./static/
 
 # Switch to non-root user
 USER appuser

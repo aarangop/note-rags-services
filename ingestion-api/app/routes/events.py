@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.db import get_db
-from api.models.events import FileChangeEvent
-from api.services.document_service import (
+from app.db import get_db
+from app.models.events import FileChangeEvent
+from app.services.document_service import (
     create_document_chunks,
     upsert_document,
     upsert_document_chunks,
 )
-from api.services.embeddings import get_embeddings
-from api.utils.file_processor import FileProcessorRegistry
-from api.utils.text_splitter import split_text
+from app.services.embeddings import get_embeddings
+from app.utils.file_processor import FileProcessorRegistry
+from app.utils.text_splitter import split_text
 
 router = APIRouter(prefix="/file_events")
 

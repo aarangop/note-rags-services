@@ -34,8 +34,8 @@ services:
 
   chat-api:
     build:
-      context: ./chat-api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./chat-api/Dockerfile
     container_name: note-rags-chat-api
     ports:
       - "8000:8000"
@@ -59,7 +59,10 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/notes_rag
+      - DATABASE_URL=postgres:5432/notes_rag
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_URL=redis://redis:6379
     depends_on:
       postgres:

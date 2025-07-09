@@ -1,6 +1,5 @@
+from app.config import config
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-from api.config import config
 
 
 def get_text_splitter():

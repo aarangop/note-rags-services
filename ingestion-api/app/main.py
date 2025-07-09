@@ -3,9 +3,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.db import Base, async_engine
-from api.logging_config import configure_logging, get_logger
-from api.routes import file_event_router, health_router
+from app.db import Base, async_engine
+from app.logging_config import configure_logging, get_logger
+from app.routes import file_event_router, health_router
 
 # Configure structured logging
 configure_logging()
