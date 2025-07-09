@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db import get_db
-from api.models import FileChangeEvent
+from api.models.events import FileChangeEvent
 from api.services.document_service import (
     create_document_chunks,
     upsert_document,

@@ -1,0 +1,45 @@
+[project]
+name = "note-rags-db"
+version = "0.1.0"
+description = "Shared database modules for RAG-powered note-making"
+readme = "README.md"
+authors = [
+    { name = "Andres Arango", email = "andresap@proton.me" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.2.1",
+    "fastapi[standard]>=0.116.0",
+    "pgvector>=0.4.1",
+    "psycopg2-binary>=2.9.10",
+    "pydantic-settings>=2.10.1",
+    "sqlalchemy>=2.0.41",
+]
+
+[project.scripts]
+note-rags-db = "note_rags_db.main:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-v"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+test = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/note_rags_db"]
+

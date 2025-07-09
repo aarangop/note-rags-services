@@ -23,7 +23,7 @@ class Config(BaseSettings):
     chunk_overlap: int = Field(default=50, alias="CHUNK_OVERLAP")
 
     def get_db_connection_string(self):
-        return f"postgresql+{self.db_driver}://{self.db_username}:{self.db_password}@{config.db_url}"
+        return f"postgresql+{self.db_driver}://{self.db_username}:{self.db_password}@{self.db_url}"
 
 
 config = Config()

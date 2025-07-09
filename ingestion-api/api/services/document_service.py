@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.models import Document, DocumentChunk
+from api.schemas.document import Document, DocumentChunk
 
 
 async def upsert_document(
