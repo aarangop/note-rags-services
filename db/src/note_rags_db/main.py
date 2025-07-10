@@ -1,15 +1,26 @@
+from typing import Optional
+
 import click
+from psycopg2 import OperationalError
 from sqlalchemy.exc import ArgumentError
 
-from note_rags_db.db import Base, engine
+from note_rags_db.config import build_database_url
+from note_rags_db.db import Base, create_db_engine
 
 # Import models so they get registered with Base
 from note_rags_db.schemas import document  # noqa: F401
 
 
-def init():
+def init(
+    database_url: str,
+    dialect: str,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+):
     """Initialize the database by creating all SQLAlchemy tables."""
     try:
+        db_url = build_database_url(database_url, dialect, username, password)
+        engine = create_db_engine(db_url)
         Base.metadata.create_all(engine)
         table_names = list(Base.metadata.tables.keys())
         if table_names:
@@ -20,13 +31,27 @@ def init():
         print(e._message)
     except Exception as e:
         print(f"Exception initiating database: {e}")
+        raise e
 
 
 @click.command()
-def init_command():
+@click.option(
+    "--database-url", required=True, help="Database URL (e.g., localhost:5432/mydb)"
+)
+@click.option("--dialect", default="postgresql+psycopg2", help="Database dialect")
+@click.option("--username", help="Database username")
+@click.option("--password", help="Database password")
+def init_command(
+    database_url: str, dialect: str, username: Optional[str], password: Optional[str]
+):
     """Initialize the database."""
-    init()
-    click.echo("Database initialized successfully!")
+    try:
+        init(database_url, dialect, username, password)
+        click.echo("Database initialized successfully!")
+    except OperationalError as e:
+        print(f"Database operational error: {e}")
+    except Exception as e:
+        click.echo(f"Failed to initialize database: {e}")
 
 
 @click.group()

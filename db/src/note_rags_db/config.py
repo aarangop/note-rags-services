@@ -1,17 +1,13 @@
-from pydantic import Field, SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 
-class Config(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
-
-    url: str = Field(default=..., alias="URL")
-    user: str = Field(default=..., alias="USER")
-    password: SecretStr = Field(default=..., alias="PASSWORD")
-    dialect: str = Field(default="postgresql+psycopg2", alias="DIALECT")
-
-    def get_url(self):
-        return f"{self.dialect}://{self.user}:{self.password.get_secret_value()}@{self.url}"
-
-
-config = Config()
+def build_database_url(
+    database_url: str,
+    dialect: str,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Build a database connection URL from CLI arguments."""
+    if username and password:
+        return f"{dialect}://{username}:{password}@{database_url}"
+    return f"{dialect}://{database_url}"
