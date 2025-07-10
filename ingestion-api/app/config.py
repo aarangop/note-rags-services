@@ -5,9 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-    db_url: str = Field(default=..., alias="DATABASE_URL")
+    db_url: str = Field(default=..., alias="DB_URL")
 
-    db_username: str = Field(default=..., alias="DB_USERNAMe")
+    db_username: str = Field(default=..., alias="DB_USERNAME")
 
     db_password: str = Field(default=..., alias="DB_PASSWORD")
 
