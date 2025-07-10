@@ -15,6 +15,6 @@ async def new_query(query: Query, db=Depends(get_db)):
     """
     Use simple retrieval and generation LangChain app to generate response. 
     """
-
-    return StreamingResponse(stream_query_response(query=query, db=db))
+    response = await stream_query_response(query, db)
+    return response 
 

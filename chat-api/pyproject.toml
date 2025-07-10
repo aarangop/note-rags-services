@@ -12,12 +12,12 @@ dependencies = [
     "asyncpg>=0.29.0",
     "redis>=5.0.0",
     "python-multipart>=0.0.6",
-    "langchain>=0.3.26",
+    "langchain[openai]>=0.3.26",
     "langgraph>=0.5.1",
     "pydantic-settings>=2.10.1",
     "greenlet>=3.2.3",
     "langchain-openai>=0.3.27",
-    "note-rags-db"
+    "note-rags-db",
 ]
 
 [build-system]
