@@ -39,4 +39,4 @@ test = [
 ]
 
 [tool.uv.sources]
-note-rags-db = {path = "../db"}
+note-rags-db = { workspace = true }

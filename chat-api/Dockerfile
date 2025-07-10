@@ -1,22 +1,24 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /workspace
 
 # Install uv
 RUN pip install uv
 
-# Copy the db package first (this is the dependency)
-COPY db/ ../db/
+# Copy the workspace pyproject.toml and uv.lock first
+COPY pyproject.toml uv.lock ./
 
-# Copy project files
-COPY chat-api/pyproject.toml ./
-COPY chat-api/uv.lock ./
+# Copy the db package (workspace dependency)
+COPY db/ ./db/
+
+# Copy chat-api project files
+COPY chat-api/ ./chat-api/
 
 # Install dependencies
 RUN uv sync
 
-# Copy source code
-COPY chat-api/app/ ./app/
+# Set working directory to chat-api
+WORKDIR /workspace/chat-api
 
 # Expose port
 EXPOSE 8000

@@ -34,3 +34,9 @@ async def root():
 
 app.include_router(file_event_router)
 app.include_router(health_router)
+
+if __name__ == "__main__":
+    import uvicorn
+
+    # Start the server
+    uvicorn.run(app, host="0.0.0.0", port=8001)

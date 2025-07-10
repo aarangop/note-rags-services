@@ -32,6 +32,29 @@ services:
       timeout: 10s
       retries: 3
 
+  ingestion-api:
+    build:
+      context: .
+      dockerfile: ./ingestion-api/Dockerfile
+    container_name: note-rags-ingestion-api
+    ports:
+      - "8001:8001"
+    environment:
+      - DB_URL=postgres:5432/${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/ingestion-api
+    command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+
   chat-api:
     build:
       context: .
@@ -50,30 +73,10 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./chat-api:/app
+      - .:/workspace
+    working_dir: /workspace/chat-api
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
-  ingestion-api:
-    build:
-      context: ./ingestion-api
-      dockerfile: Dockerfile
-    container_name: note-rags-ingestion-api
-    ports:
-      - "8001:8001"
-    environment:
-      - DATABASE_URL=postgres:5432/{DATABASE_NAME}
-      - DATABASE_USERNAME=${DATABASE_USERNAME}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./ingestion-api:/app
-    command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
 volumes:
   postgres_data:
