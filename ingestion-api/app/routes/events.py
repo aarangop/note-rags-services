@@ -16,9 +16,7 @@ router = APIRouter(prefix="/file_events")
 
 
 @router.post("/")
-async def process_file_change(
-    event: FileChangeEvent, db: AsyncSession = Depends(get_db)
-):
+async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_db)):
     """
     Process a file change event by extracting text, creating embeddings and storing document chunks.
 
@@ -46,7 +44,7 @@ async def process_file_change(
     except ValueError:
         raise HTTPException(
             status_code=400, detail=f"File {event.file_path} not supported"
-        )
+        ) from Exception
 
     text, metadata = processor.extract_text(event.file_content)
 
@@ -55,17 +53,13 @@ async def process_file_change(
     embeddings = await get_embeddings(chunks)
 
     # First create or update document.
-    document_id = await upsert_document(
-        db=db, content=text, file_path=event.file_path, metadata=metadata
-    )
+    document_id = await upsert_document(db=db, content=text, file_path=event.file_path)
 
-    chunks = create_document_chunks(
-        embeddings=embeddings, text=chunks, document_id=document_id
-    )
+    chunks = create_document_chunks(embeddings=embeddings, text=chunks, document_id=document_id)
 
-    chunk_ids = await upsert_document_chunks(
-        db=db, document_id=document_id, chunks=chunks
-    )
+    chunk_ids = await upsert_document_chunks(db=db, document_id=document_id, chunks=chunks)
+
+    await db.commit()
 
     return {
         "message": f"File {event.file_path} processed. {len(chunk_ids)} chunks upserted",

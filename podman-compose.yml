@@ -18,7 +18,23 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
+  postgres-test:
+    image: pgvector/pgvector:pg16
+    container_name: note-rags-postgres-test
+    environment: 
+      POSTGRES_DB: ${DB_NAME}_test
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   redis:
     image: redis:7-alpine
     container_name: note-rags-redis

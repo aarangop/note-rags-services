@@ -39,12 +39,12 @@ class TestProcessFileChange:
         expected_chunk_ids = [1, 2, 3]
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             # Configure mocks
             mock_registry.get_processor.return_value = mock_processor
@@ -55,9 +55,7 @@ class TestProcessFileChange:
             mock_upsert_chunks.return_value = expected_chunk_ids
 
             # Act
-            result = await process_file_change(
-                sample_file_change_event, mock_db_session
-            )
+            result = await process_file_change(sample_file_change_event, mock_db_session)
 
             # Assert
             assert result == {
@@ -66,9 +64,7 @@ class TestProcessFileChange:
             }
 
             # Verify all mocks were called correctly
-            mock_registry.get_processor.assert_called_once_with(
-                sample_file_change_event.file_path
-            )
+            mock_registry.get_processor.assert_called_once_with(sample_file_change_event.file_path)
             mock_processor.extract_text.assert_called_once_with(
                 sample_file_change_event.file_content
             )
@@ -92,9 +88,7 @@ class TestProcessFileChange:
             )
 
     @pytest.mark.asyncio
-    async def test_unsupported_file_type_raises_http_exception(
-        self, mock_db_session: AsyncSession
-    ):
+    async def test_unsupported_file_type_raises_http_exception(self, mock_db_session: AsyncSession):
         """Test that unsupported file types raise HTTPException with 400 status."""
         # Arrange
         unsupported_event = FileChangeEvent(
@@ -104,10 +98,8 @@ class TestProcessFileChange:
             timestamp=datetime.now(),
         )
 
-        with patch("api.routes.events.FileProcessorRegistry") as mock_registry:
-            mock_registry.get_processor.side_effect = ValueError(
-                "Unsupported file type"
-            )
+        with patch("app.routes.events.FileProcessorRegistry") as mock_registry:
+            mock_registry.get_processor.side_effect = ValueError("Unsupported file type")
 
             # Act & Assert
             with pytest.raises(HTTPException) as exc_info:
@@ -129,12 +121,12 @@ class TestProcessFileChange:
         mock_processor.extract_text.return_value = (extracted_text, pdf_metadata)
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = ["PDF chunk 1", "PDF chunk 2"]
@@ -151,9 +143,7 @@ class TestProcessFileChange:
             assert "2 chunks upserted" in result["message"]
 
             # Verify PDF-specific processing
-            mock_processor.extract_text.assert_called_once_with(
-                sample_pdf_event.file_content
-            )
+            mock_processor.extract_text.assert_called_once_with(sample_pdf_event.file_content)
             mock_upsert_document.assert_called_once_with(
                 db=mock_db_session,
                 content=extracted_text,
@@ -176,12 +166,12 @@ class TestProcessFileChange:
         mock_processor.extract_text.return_value = ("", {})
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = []  # No chunks from empty content
@@ -214,12 +204,12 @@ class TestProcessFileChange:
         many_chunk_ids = list(range(1, 51))
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = many_chunks
@@ -229,9 +219,7 @@ class TestProcessFileChange:
             mock_upsert_chunks.return_value = many_chunk_ids
 
             # Act
-            result = await process_file_change(
-                sample_file_change_event, mock_db_session
-            )
+            result = await process_file_change(sample_file_change_event, mock_db_session)
 
             # Assert
             assert result["document_id"] == 999
@@ -267,12 +255,12 @@ class TestProcessFileChange:
         mock_processor.extract_text.return_value = ("Text content", extracted_metadata)
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = ["chunk"]
@@ -306,12 +294,12 @@ class TestProcessFileChange:
         mock_processor.extract_text.return_value = ("content", {})
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = ["chunk"]
@@ -342,9 +330,9 @@ class TestProcessFileChange:
         mock_processor.extract_text.return_value = ("content", {})
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
         ):
             mock_registry.get_processor.return_value = mock_processor
             mock_split_text.return_value = ["chunk"]

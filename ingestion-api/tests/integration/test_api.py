@@ -33,9 +33,7 @@ class TestProcessFileChangeEndpoint:
     """Integration tests for the file change processing endpoint."""
 
     @pytest.mark.asyncio
-    async def test_endpoint_returns_200_on_success(
-        self, client, valid_file_event_payload
-    ):
+    async def test_endpoint_returns_200_on_success(self, client, valid_file_event_payload):
         """Test that the endpoint returns 200 status on successful processing."""
         # Arrange - Mock all the dependencies
         mock_processor = Mock()
@@ -45,13 +43,13 @@ class TestProcessFileChangeEndpoint:
         )
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.split_text") as mock_split_text,
-            patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-            patch("api.routes.events.upsert_document") as mock_upsert_document,
-            patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-            patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
-            patch("api.routes.events.get_db") as mock_get_db,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.split_text") as mock_split_text,
+            patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+            patch("app.routes.events.upsert_document") as mock_upsert_document,
+            patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+            patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.get_db") as mock_get_db,
         ):
             # Configure mocks
             mock_registry.get_processor.return_value = mock_processor
@@ -86,12 +84,10 @@ class TestProcessFileChangeEndpoint:
         }
 
         with (
-            patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-            patch("api.routes.events.get_db") as mock_get_db,
+            patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.get_db") as mock_get_db,
         ):
-            mock_registry.get_processor.side_effect = ValueError(
-                "Unsupported file type"
-            )
+            mock_registry.get_processor.side_effect = ValueError("Unsupported file type")
             mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
             mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
@@ -125,9 +121,7 @@ class TestProcessFileChangeEndpoint:
 
         for payload in invalid_payloads:
             response = client.post("/file_events/", json=payload)
-            assert (
-                response.status_code == 422
-            )  # Unprocessable Entity for validation errors
+            assert response.status_code == 422  # Unprocessable Entity for validation errors
 
     @pytest.mark.asyncio
     async def test_endpoint_handles_different_event_types(self, client):
@@ -148,13 +142,13 @@ class TestProcessFileChangeEndpoint:
             mock_processor.extract_text.return_value = (f"Content for {event_type}", {})
 
             with (
-                patch("api.routes.events.FileProcessorRegistry") as mock_registry,
-                patch("api.routes.events.split_text") as mock_split_text,
-                patch("api.routes.events.get_embeddings") as mock_get_embeddings,
-                patch("api.routes.events.upsert_document") as mock_upsert_document,
-                patch("api.routes.events.create_document_chunks") as mock_create_chunks,
-                patch("api.routes.events.upsert_document_chunks") as mock_upsert_chunks,
-                patch("api.routes.events.get_db") as mock_get_db,
+                patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+                patch("app.routes.events.split_text") as mock_split_text,
+                patch("app.routes.events.get_embeddings") as mock_get_embeddings,
+                patch("app.routes.events.upsert_document") as mock_upsert_document,
+                patch("app.routes.events.create_document_chunks") as mock_create_chunks,
+                patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+                patch("app.routes.events.get_db") as mock_get_db,
             ):
                 mock_registry.get_processor.return_value = mock_processor
                 mock_split_text.return_value = ["chunk"]
@@ -162,9 +156,7 @@ class TestProcessFileChangeEndpoint:
                 mock_upsert_document.return_value = 456
                 mock_create_chunks.return_value = [{"id": 1}]
                 mock_upsert_chunks.return_value = [1]
-                mock_get_db.return_value.__aenter__ = (
-                    lambda self: mock_get_db.return_value
-                )
+                mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
                 mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
                 response = client.post("/file_events/", json=payload)

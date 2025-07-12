@@ -8,7 +8,7 @@ from note_rags_db.config import build_database_url
 from note_rags_db.db import Base, create_db_engine
 
 # Import models so they get registered with Base
-from note_rags_db.schemas import document  # noqa: F401
+from note_rags_db.schemas import Document, DocumentChunk  # noqa: F401
 
 
 def init(

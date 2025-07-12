@@ -12,12 +12,10 @@ class Document(Base):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    file_path: Mapped[str] = mapped_column(String, unique=True)
+    file_path: Mapped[str] = mapped_column(String(255), unique=False)
     content: Mapped[str] = mapped_column(Text)
-    document_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSON, nullable=True
-    )
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
+    updated_at: Mapped[datetime.datetime] = mapped_column(default=func.now(), onupdate=func.now())
 
     # Relationship
     chunks: Mapped[List["DocumentChunk"]] = relationship(back_populates="document")

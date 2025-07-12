@@ -2,15 +2,12 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.schemas.document import Document, DocumentChunk
-
+from note_rags_db.schemas import DocumentChunk, Document
 
 async def upsert_document(
     db: AsyncSession,
     file_path: str,
     content: str,
-    metadata: Optional[Dict[str, Any]] = None,
 ) -> int:
     """Create or update document, return document ID"""
 
@@ -18,13 +15,12 @@ async def upsert_document(
 
     if document:
         document.content = content
-        document.document_metadata = metadata
         # Clear existing chunks
         await db.execute(
             delete(DocumentChunk).where(DocumentChunk.document_id == document.id)
         )
     else:
-        document = Document(file_path=file_path, content=content, metadata=metadata)
+        document = Document(file_path=file_path, content=content)
         db.add(document)
         await db.flush()  # Get ID
 
