@@ -1,35 +1,48 @@
-from typing import Any, Dict, List, Optional
+import hashlib
 
+import structlog
+from note_rags_db.schemas import Document, DocumentChunk
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from note_rags_db.schemas import DocumentChunk, Document
+
+logger = structlog.get_logger(__name__)
+
+
+def calculate_content_hash(content: str) -> str:
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def check_document_changed(db_document: Document, new_content: str) -> bool:
+    new_hash = calculate_content_hash(new_content)
+    return new_hash != db_document.content_hash
+
 
 async def upsert_document(
-    db: AsyncSession,
-    file_path: str,
-    content: str,
+    db: AsyncSession, file_path: str, content: str, metadata: dict | None = None
 ) -> int:
     """Create or update document, return document ID"""
-
     document = await get_document_by_file_path(db, file_path)
 
     if document:
+        if not check_document_changed(document, content):
+            logger.debug("Document unchaged, skipping", document_id=document.id)
+            return document.id
         document.content = content
+        document.content_hash = calculate_content_hash(content)
+        # TODO: Handle metadata when Document model supports it
         # Clear existing chunks
-        await db.execute(
-            delete(DocumentChunk).where(DocumentChunk.document_id == document.id)
-        )
+        await db.execute(delete(DocumentChunk).where(DocumentChunk.document_id == document.id))
     else:
-        document = Document(file_path=file_path, content=content)
+        content_hash = calculate_content_hash(content)
+        document = Document(file_path=file_path, content=content, content_hash=content_hash)
+        # TODO: Handle metadata when Document model supports it
         db.add(document)
         await db.flush()  # Get ID
 
     return document.id
 
 
-async def get_document_by_file_path(
-    db: AsyncSession, file_path: str
-) -> Document | None:
+async def get_document_by_file_path(db: AsyncSession, file_path: str) -> Document | None:
     """Retrieve a document by its file path
 
     Args:
@@ -44,8 +57,8 @@ async def get_document_by_file_path(
 
 
 def create_document_chunks(
-    embeddings: List[List[float]], text: List[str], document_id: int
-) -> List[DocumentChunk]:
+    embeddings: list[list[float]], text: list[str], document_id: int
+) -> list[DocumentChunk]:
     """Create document chunks from embeddings and text
 
     Args:
@@ -60,7 +73,7 @@ def create_document_chunks(
         raise ValueError("Number of embeddings must match number of text chunks")
 
     chunks = []
-    for i, (embedding, content) in enumerate(zip(embeddings, text)):
+    for i, (embedding, content) in enumerate(zip(embeddings, text, strict=False)):
         chunk = DocumentChunk(
             document_id=document_id,
             content=content,
@@ -73,8 +86,8 @@ def create_document_chunks(
 
 
 async def upsert_document_chunks(
-    db: AsyncSession, document_id: int, chunks: List[DocumentChunk]
-) -> List[int]:
+    db: AsyncSession, document_id: int, chunks: list[DocumentChunk]
+) -> list[int]:
     """Upsert document chunks, returning the ids of the upserted chunks"""
     chunk_ids = []
     for chunk in chunks:

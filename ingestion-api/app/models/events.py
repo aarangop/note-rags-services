@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -15,14 +15,10 @@ class FileChangeEvent(BaseModel):
     event_type: EventType
     file_content: bytes
     file_path: str
-    timestamp: Optional[datetime]
+    timestamp: datetime | None
 
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
-    file_size: Optional[int] = Field(
-        default=None, description="Size of the file in bytes"
-    )
+    file_size: int | None = Field(default=None, description="Size of the file in bytes")
 
-    checksum: Optional[str] = Field(
-        default=None, description="SHA256 checksum of file content"
-    )
+    checksum: str | None = Field(default=None, description="SHA256 checksum of file content")
