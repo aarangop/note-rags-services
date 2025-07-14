@@ -1,6 +1,6 @@
 [project]
 name = "note-rags-db"
-version = "0.2.0"
+version = "0.2.1"
 description = "Shared database modules for RAG-powered note-making"
 readme = "README.md"
 authors = [

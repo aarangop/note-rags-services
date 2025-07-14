@@ -16,7 +16,7 @@ class Document(Base):
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(default=func.now(), onupdate=func.now())
-
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     # Relationship
     chunks: Mapped[List["DocumentChunk"]] = relationship(back_populates="document")
 
