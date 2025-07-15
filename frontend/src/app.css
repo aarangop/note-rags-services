@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+/* Import design system tokens */
+@import 'tailwindcss';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton/themes/cerberus';
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
+/* Base typography and layout */
+body {
+	font-family: var(--font-family-sans);
+	line-height: var(--line-height-normal);
+	color: var(--color-gray-900);
+	background-color: var(--color-gray-50);
+}
