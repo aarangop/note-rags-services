@@ -8,6 +8,9 @@ WORKDIR /workspace
 # Install uv
 RUN pip install uv
 
+# Set UV to use a different venv location
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+
 # Copy the workspace pyproject.toml and uv.lock first
 COPY pyproject.toml uv.lock ./
 
@@ -37,4 +40,4 @@ WORKDIR /workspace/ingestion-api
 EXPOSE 8001
 
 # Run the application
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
