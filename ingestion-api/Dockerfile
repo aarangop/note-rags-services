@@ -8,8 +8,8 @@ WORKDIR /workspace
 # Install uv
 RUN pip install uv
 
-# Set UV to use a different venv location
-ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+# Set UV to use a different venv location that appuser can access
+ENV UV_PROJECT_ENVIRONMENT=/home/appuser/.venv
 
 # Copy the workspace pyproject.toml and uv.lock first
 COPY pyproject.toml uv.lock ./
@@ -24,11 +24,13 @@ COPY ingestion-api/ ./ingestion-api/
 RUN mkdir -p /home/appuser/.cache \
     && mkdir -p /home/appuser/.local/share/uv \
     && mkdir -p /home/appuser/.local/state/uv \
+    && mkdir -p /home/appuser/.venv \
     && chown -R appuser:appuser /home/appuser \
     && chown -R appuser:appuser /workspace
 
 # Install dependencies (still as root)
-RUN uv sync
+RUN uv sync \
+    && chown -R appuser:appuser /home/appuser/.venv
 
 # Switch to non-root user
 USER appuser

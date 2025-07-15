@@ -1,8 +1,4 @@
-from dataclasses import dataclass
-from typing import List
-
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class BaseQuery(BaseModel):
@@ -13,3 +9,11 @@ class Query(BaseQuery):
     pass
 
 
+class QueryResponse(Query):
+    response: str
+    context: list[str]
+    tokens: int
+
+
+class ContextQuery(Query):
+    limit: int = 5

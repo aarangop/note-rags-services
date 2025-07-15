@@ -5,18 +5,18 @@ description = "Chat API microservice for RAG-powered chatbot"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.104.0",
-    "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
-    "sqlalchemy>=2.0.0",
-    "asyncpg>=0.29.0",
-    "redis>=5.0.0",
-    "python-multipart>=0.0.6",
+    "fastapi[standard]>=0.116.1",
+    "uvicorn[standard]>=0.35.0",
+    "pydantic>=2.11.7",
+    "sqlalchemy>=2.0.41",
+    "asyncpg>=0.30.0",
+    "redis>=6.2.0",
+    "python-multipart>=0.0.20",
     "langchain[openai]>=0.3.26",
-    "langgraph>=0.5.1",
+    "langgraph>=0.5.3",
     "pydantic-settings>=2.10.1",
     "greenlet>=3.2.3",
-    "langchain-openai>=0.3.27",
+    "langchain-openai>=0.3.28",
     "note-rags-db",
 ]
 
@@ -29,7 +29,7 @@ packages = ["app"]
 
 [dependency-groups]
 lint = [
-    "ruff>=0.12.2",
+    "ruff>=0.12.3",
 ]
 test = [
     "httpx>=0.28.1",
@@ -40,3 +40,29 @@ test = [
 
 [tool.uv.sources]
 note-rags-db = { workspace = true }
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "app/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

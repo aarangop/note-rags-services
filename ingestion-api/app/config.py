@@ -10,6 +10,7 @@ class Config(BaseSettings):
     db_password: str = Field(default=..., alias="DB_PASSWORD")
     db_driver: str = "asyncpg"
     openai_api_key: SecretStr = Field(default=..., alias="OPENAI_API_KEY")
+    embeddings_model: str = Field(default=..., alias="EMBEDDINGS_MODEL")
     chunk_size: int = Field(
         default=500,
         alias="CHUNK_SIZE",

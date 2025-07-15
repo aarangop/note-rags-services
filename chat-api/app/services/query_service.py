@@ -1,14 +1,16 @@
+import json
 from dataclasses import dataclass, field
 from typing import TypedDict
 
 from langchain import hub
 from langchain.chat_models import init_chat_model
-from langchain_openai import OpenAIEmbeddings
 from langgraph.graph import StateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_config
 from app.models.query import Query
 from app.services.context import similarity_search
+from app.services.embeddings import get_embeddings
 
 prompt = hub.pull("rlm/rag-prompt")
 
@@ -44,8 +46,7 @@ async def retrieve(state: QueryState) -> dict[str, list[str]]:
 
     limit = state.limit
 
-    embeddings = OpenAIEmbeddings()
-    query_embedding = await embeddings.aembed_query(state.question)
+    query_embedding = await get_embeddings(state.question, config=get_config())
     chunks = await similarity_search(db, query_embedding, limit)
     context = [row.content for row in chunks]
 
@@ -70,7 +71,7 @@ workflow.set_finish_point("generate")
 rag_pipeline = workflow.compile()
 
 
-async def stream_query_response(query: Query, db: AsyncSession):
+async def answer_query(query: Query, db: AsyncSession):
     result = await rag_pipeline.ainvoke(
         QueryState(
             question=query.question,
@@ -78,3 +79,47 @@ async def stream_query_response(query: Query, db: AsyncSession):
         )
     )
     return result
+
+
+async def stream_query_response(query: Query, db: AsyncSession):
+    """
+    Stream the query response using the existing LangGraph workflow.
+    Formats the output as Server-Sent Events (SSE).
+    """
+    try:
+        async for chunk in rag_pipeline.astream(QueryState(question=query.question, db=db)):
+            # Format each chunk as SSE data
+            if chunk:
+                # Determine the type of chunk based on its content
+                chunk_data = {}
+
+                if "retrieve" in chunk:
+                    # This is from the retrieve node
+                    retrieve_data = chunk["retrieve"]
+                    if "context" in retrieve_data:
+                        chunk_data = {
+                            "type": "context",
+                            "step": "retrieve",
+                            "context": retrieve_data["context"],
+                        }
+                elif "generate" in chunk:
+                    # This is from the generate node
+                    generate_data = chunk["generate"]
+                    if "answer" in generate_data:
+                        chunk_data = {
+                            "type": "answer",
+                            "step": "generate",
+                            "content": generate_data["answer"],
+                        }
+                else:
+                    # Generic chunk data
+                    chunk_data = {"type": "chunk", "data": chunk}
+
+                yield f"data: {json.dumps(chunk_data)}\n\n"
+
+        # Send completion signal
+        yield f"data: {json.dumps({'type': 'complete'})}\n\n"
+
+    except Exception as e:
+        # Send error in SSE format
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"

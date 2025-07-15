@@ -4,7 +4,7 @@ from app.config import config
 
 
 def get_embeddings_model() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(model="text-embedding-3-small", api_key=config.openai_api_key)
+    return OpenAIEmbeddings(model=config.embeddings_model, api_key=config.openai_api_key)
 
 
 async def get_embeddings(chunks: list[str]) -> list[list[float]]:
