@@ -5,7 +5,9 @@ from app.db import get_db
 from app.models.events import FileChangeEvent
 from app.models.responses import FileProcessingResponse
 from app.services.document_service import (
+    check_document_changed,
     create_document_chunks,
+    get_document_by_file_path,
     upsert_document,
     upsert_document_chunks,
 )
@@ -49,6 +51,15 @@ async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends
 
     try:
         text, metadata = processor.extract_text(event.file_content)
+
+        # Try to find document
+        document = await get_document_by_file_path(db=db, file_path=event.file_path)
+
+        # Check if document changed
+        if document and not check_document_changed(db_document=document, new_content=text):
+            return FileProcessingResponse(
+                document_id=document.id, message="File unchanged", chunks_processed=0
+            )
 
         chunks = split_text(text)
 
