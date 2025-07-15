@@ -10,15 +10,17 @@ class EventType(Enum):
     MODIFIED = "modified"
     DELETED = "deleted"
 
-
-class FileChangeEvent(BaseModel):
+class BaseFileChangeEvent(BaseModel):
     event_type: EventType
-    file_content: bytes
     file_path: str
-    timestamp: datetime | None
+    timestamp: datetime | None = None
 
+class FileChangeEvent(BaseFileChangeEvent):
+    file_content: bytes
     metadata: dict[str, Any] | None = None
-
     file_size: int | None = Field(default=None, description="Size of the file in bytes")
-
     checksum: str | None = Field(default=None, description="SHA256 checksum of file content")
+
+
+class FileDeletedEvent(BaseFileChangeEvent):
+    pass

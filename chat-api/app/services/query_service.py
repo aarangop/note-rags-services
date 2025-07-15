@@ -38,7 +38,7 @@ class QueryState:
     db: AsyncSession
     context: list[str] = field(default_factory=list)
     answer: str = ""
-    limit: int = 4
+    limit: int = 10
 
 
 async def retrieve(state: QueryState) -> dict[str, list[str]]:

@@ -41,6 +41,24 @@ async def upsert_document(
 
     return document.id
 
+async def delete_document(
+    db: AsyncSession, file_path: str
+):
+    document = await get_document_by_file_path(db, file_path)
+
+    if not document:
+        return False
+
+    await db.execute(
+        delete(DocumentChunk).where(DocumentChunk.document_id == document.id)
+    )
+
+    await db.execute(
+        delete(Document).where(Document.id == document.id)
+    )
+
+
+    return True
 
 async def get_document_by_file_path(db: AsyncSession, file_path: str) -> Document | None:
     """Retrieve a document by its file path

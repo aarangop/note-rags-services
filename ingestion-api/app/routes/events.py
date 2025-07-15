@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.models.events import FileChangeEvent
+from app.models.events import EventType, FileChangeEvent, FileDeletedEvent
 from app.models.responses import FileProcessingResponse
 from app.services.document_service import (
     check_document_changed,
     create_document_chunks,
+    delete_document,
     get_document_by_file_path,
     upsert_document,
     upsert_document_chunks,
@@ -22,15 +23,6 @@ router = APIRouter(prefix="/file_events")
 async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_db)):
     """
     Process a file change event by extracting text, creating embeddings and storing document chunks.
-
-    This function handles file changes by:
-    1. Identifying the appropriate processor for the file type
-    2. Extracting text and metadata from the file content
-    3. Splitting the text into manageable chunks
-    4. Generating embeddings for each text chunk
-    5. Storing or updating the document in the database
-    6. Creating document chunks with embeddings
-    7. Storing the document chunks in the database
 
     Args:
         event (FileChangeEvent): Event containing file path and content information
@@ -52,7 +44,6 @@ async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends
     try:
         text, metadata = processor.extract_text(event.file_content)
 
-        # Try to find document
         document = await get_document_by_file_path(db=db, file_path=event.file_path)
 
         # Check if document changed
@@ -84,3 +75,19 @@ async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}") from e
+
+
+@router.delete("/", response_model=FileProcessingResponse)
+async def delete_file(
+   file_path: str = Query(..., description="Path to the file to delete from the database"), db: AsyncSession = Depends(get_db)
+    ):
+    # Try to find document
+    if await delete_document(db, file_path):
+        await db.commit()
+        return FileProcessingResponse(
+            message=f"Document '{file_path}' and its associated chunks deleted",
+        )
+    else:
+        return FileProcessingResponse(
+            message="No document found, nothing deleted"
+        )

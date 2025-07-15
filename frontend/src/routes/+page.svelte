@@ -5,10 +5,7 @@
 	<!-- Hero Section -->
 	<div class="mb-12 text-center">
 		<h1 class="mb-4 text-4xl font-bold text-gray-900">Welcome to Note-RAGs</h1>
-		<p class="mx-auto max-w-2xl text-xl text-gray-600">
-			Your intelligent note querying system. Ask questions about your notes and get AI-powered
-			answers with context.
-		</p>
+		<p class="mx-auto max-w-2xl text-xl text-gray-600">My intelligent note making system.</p>
 	</div>
 
 	<!-- Feature Cards -->
