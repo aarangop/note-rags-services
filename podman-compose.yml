@@ -100,6 +100,24 @@ services:
     working_dir: /workspace/chat-api
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
+    notes-api:
+      build:
+        context: .
+        dockerfile: ./notes-api/Dockerfile
+      container_name: note-rags-notes-api
+      ports: "8003:8000"
+      environment:
+        - DB_URL=postgres:5432/${DB_NAME}
+        - DB_USERNAME=${DB_USERNAME}
+        - DB_PASSWORD=${DB_PASSWORD}
+      depends_on:
+        postgres:
+          condition: service_healthy
+      volumes: 
+        - /workspace/.venv  # Exclude .venv from host mount
+      working_dir: /workspace/chat-api
+      command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
 
 volumes:
   postgres_data:

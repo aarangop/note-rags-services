@@ -1,8 +1,9 @@
 [tool.uv.workspace]
 members = [
     "chat-api",
-    "ingestion-api", 
-    "db"
+    "ingestion-api",
+    "db",
+    "notes-api",
 ]
 
 [dependency-groups]
