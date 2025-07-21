@@ -72,11 +72,11 @@ services:
     working_dir: /workspace/ingestion-api
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
-  chat-api:
+  genai-api:
     build:
       context: .
-      dockerfile: ./chat-api/Dockerfile
-    container_name: note-rags-chat-api
+      dockerfile: ./genai-api/Dockerfile
+    container_name: note-rags-genai-api
     ports:
       - "8002:8000"
     environment:
@@ -97,7 +97,7 @@ services:
     volumes:
       - .:/workspace
       - /workspace/.venv  # Exclude .venv from host mount
-    working_dir: /workspace/chat-api
+    working_dir: /workspace/genai-api
     command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
     notes-api:
@@ -115,7 +115,7 @@ services:
           condition: service_healthy
       volumes: 
         - /workspace/.venv  # Exclude .venv from host mount
-      working_dir: /workspace/chat-api
+      working_dir: /workspace/notes-api
       command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 

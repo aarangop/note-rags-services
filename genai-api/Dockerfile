@@ -14,14 +14,14 @@ COPY pyproject.toml uv.lock ./
 # Copy the db package (workspace dependency)
 COPY db/ ./db/
 
-# Copy chat-api project files
-COPY chat-api/ ./chat-api/
+# Copy genai-api project files
+COPY genai-api/ ./genai-api/
 
 # Install dependencies
 RUN uv sync
 
-# Set working directory to chat-api
-WORKDIR /workspace/chat-api
+# Set working directory to genai-api
+WORKDIR /workspace/genai-api
 
 # Expose port
 EXPOSE 8000

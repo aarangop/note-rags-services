@@ -1,6 +1,6 @@
 [tool.uv.workspace]
 members = [
-    "chat-api",
+    "genai-api",
     "ingestion-api",
     "db",
     "notes-api",

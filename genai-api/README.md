@@ -1,6 +1,6 @@
-# Chat API Microservice
+# GenAI API Microservice
 
-This is the chat API microservice for the RAG-powered chatbot system.
+This is the GenAI API microservice for the RAG-powered chatbot system.
 
 ## Development
 

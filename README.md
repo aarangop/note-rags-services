@@ -7,7 +7,7 @@ with FastAPI and orchestrated using Podman Compose.
 
 The system consists of the following microservices:
 
-- **chat-api** (Port 8000): Handles chat interactions and conversations
+- **genai-api** (Port 8000): Handles GenAI interactions and conversations
 - **ingestion-api** (Port 8001): Processes file changes, chunks content, and
   manages embeddings
 - **postgres**: Database with PgVector extension for vector storage
@@ -24,7 +24,7 @@ The system consists of the following microservices:
 1. Install dependencies for each service:
 
    ```bash
-   cd chat-api && uv sync && cd ..
+   cd genai-api && uv sync && cd ..
    cd ingestion-api && uv sync && cd ..
    ```
 
@@ -45,7 +45,7 @@ The system consists of the following microservices:
 **Chat API:**
 
 ```bash
-cd chat-api
+cd genai-api
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -79,7 +79,7 @@ Once running, API documentation is available at:
 
 ```
 note-rags-api/
-├── chat-api/           # Chat microservice
+├── genai-api/          # GenAI microservice
 ├── ingestion-api/      # Data ingestion microservice
 ├── scripts/            # Database initialization scripts
 ├── podman-compose.yml  # Service orchestration

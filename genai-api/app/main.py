@@ -26,7 +26,7 @@ app.include_router(contexts_router)
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "chat-api"}
+    return {"status": "healthy", "service": "genai-api"}
 
 
 @app.get("/")
