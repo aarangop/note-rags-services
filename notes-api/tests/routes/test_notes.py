@@ -33,8 +33,8 @@ class TestNotesRoutes:
         response = client.get(f"/notes/{note_id}")
 
         # Assert
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() is None
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "Note with id 999 not found" in response.json()["detail"]
         mock_db.get.assert_called_once()
 
     def test_create_new_note_success(self, test_client_with_db_mock):
@@ -145,8 +145,8 @@ class TestNotesRoutes:
         response = client.put(f"/notes/{note_id}", json=update_data)
 
         # Assert
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() is None
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert "Note with id 999 not found" in response.json()["detail"]
         mock_db.get.assert_called_once()
         mock_db.commit.assert_not_called()
 

@@ -27,10 +27,3 @@ app.include_router(notes_router, prefix="/notes")
 async def root():
     """Root endpoint"""
     return {"message": "Notes API is running", "version": "0.1.0"}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    # Start the server
-    uvicorn.run(app, host="0.0.0.0", port=8002)

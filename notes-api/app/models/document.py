@@ -5,6 +5,10 @@ from note_rags_db.schemas import Document, DocumentType
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class DocumentConversionError(Exception):
+    pass
+
+
 class BaseDocument(BaseModel):
     file_path: str
     title: str
@@ -15,14 +19,18 @@ class BaseDocument(BaseModel):
     metadata: dict = {}
 
     def to_db_model(self) -> Document:
-        return Document(
-            file_path=self.file_path,
-            title=self.title,
-            content=self.content,
-            updated_at=self.updated_at,
-            created_at=self.created_at,
-            content_hash=hashlib.sha256(self.content.encode("utf-8")).hexdigest(),
-        )
+        try:
+            return Document(
+                file_path=self.file_path,
+                title=self.title,
+                content=self.content,
+                updated_at=self.updated_at,
+                created_at=self.created_at,
+                content_hash=hashlib.sha256(self.content.encode("utf-8")).hexdigest(),
+                document_metadata=self.metadata,
+            )
+        except Exception:
+            raise DocumentConversionError() from Exception
 
 
 class DocumentCreate(BaseDocument):

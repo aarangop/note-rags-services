@@ -7,6 +7,10 @@ from app.db import get_db
 from app.models.note import Note, NoteCreate, NoteUpdate
 
 
+class NoteNotFoundError(Exception):
+    """Exception raised when a note is not found in the database."""
+
+
 class NotesRepository:
     """
     Repository class for managing note-related database operations.
@@ -64,7 +68,7 @@ class NotesRepository:
         try:
             document = await self.db.get(Document, note_id)
             if document is None:
-                return None
+                raise NoteNotFoundError(f"Note with id {note_id} not found")
 
             # Update document fields with non-None values from the update
             if note.title is not None:
@@ -79,6 +83,9 @@ class NotesRepository:
 
             # Convert updated Document to NoteResponse using the class method
             return Note.from_document(document)
+        except NoteNotFoundError:
+            # Re-raise NoteNotFoundError so it can be handled by the route
+            raise
         except Exception:
             await self.db.rollback()
             return None
@@ -96,7 +103,6 @@ class NotesRepository:
         Raises:
             None: Exceptions are caught and handled internally, returning False on any exception.
         """
-        """Delete a note by ID and return True if successful, False if not found"""
         try:
             document = await self.db.get(Document, id)
             if document is None:
@@ -128,7 +134,7 @@ class NotesRepository:
         try:
             document = await self.db.get(Document, note_id)
             if document is None:
-                return None
+                raise NoteNotFoundError(f"Note with id {note_id} not found")
 
             # Convert Document to NoteResponse using the class method
             return Note.from_document(document)
@@ -156,7 +162,7 @@ class NotesRepository:
             document = result.scalar_one_or_none()
 
             if document is None:
-                return None
+                raise NoteNotFoundError(f"Note with title '{title}' not found")
 
             return Note.from_document(document)
         except Exception:
