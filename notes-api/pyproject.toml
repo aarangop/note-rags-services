@@ -14,6 +14,7 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "greenlet>=3.2.3",
     "note-rags-db",
+    "strawberry-graphql[fastapi]>=0.278.0",
 ]
 
 [build-system]
@@ -22,3 +23,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.uv.sources]
+note-rags-db = { workspace = true }

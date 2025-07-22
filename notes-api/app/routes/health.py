@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 
-router = APIRouter(prefix="/health")
+router = APIRouter(tags=["health"])
 
 
 class APIHealthState(enum.Enum):

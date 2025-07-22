@@ -1,3 +1,3 @@
-from .document import Document, DocumentChunk
+from .document import Document, DocumentChunk, DocumentType
 
-__all__ = ["Document", "DocumentChunk"]
+__all__ = ["Document", "DocumentChunk", "DocumentType"]
