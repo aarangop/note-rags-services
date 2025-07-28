@@ -29,6 +29,9 @@ class Document(Base):
         updated_at (datetime): Timestamp of the last update to the document.
         content_hash (str): SHA hash of the document content for change detection.
         chunks (list): Related document chunks extracted from this document.
+        title (str): Title of the document, indexed and unique.
+        document_type (str): Type of document (e.g., NOTE), indexed.
+        document_metadata (dict): Optional JSON metadata associated with the document.
     """
 
     __tablename__ = "documents"
@@ -38,12 +41,16 @@ class Document(Base):
     file_path: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
-    updated_at: Mapped[datetime.datetime] = mapped_column(default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        default=func.now(), onupdate=func.now()
+    )
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     document_type: Mapped[str] = mapped_column(
         String(64), nullable=False, default=DocumentType.NOTE.value, index=True
     )
-    document_metadata: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    document_metadata: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON, nullable=True
+    )
 
     # Relationship
     chunks: Mapped[list["DocumentChunk"]] = relationship(back_populates="document")
