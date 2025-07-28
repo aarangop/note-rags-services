@@ -1,3 +1,3 @@
-from .events import FileChangeEvent
+from .events import BinaryFileChangeEvent, TextFileChangeEvent
 
-__all__ = ["FileChangeEvent"]
+__all__ = ["TextFileChangeEvent", "BinaryFileChangeEvent"]

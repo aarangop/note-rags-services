@@ -37,7 +37,7 @@ class TestProcessFileChangeEndpoint:
         """Test that the endpoint returns 200 status on successful processing."""
         # Arrange - Mock all the dependencies
         mock_processor = Mock()
-        mock_processor.extract_text.return_value = (
+        mock_processor.parse_content.return_value = (
             "Extracted content",
             {"key": "value"},
         )
@@ -49,6 +49,7 @@ class TestProcessFileChangeEndpoint:
             patch("app.routes.events.upsert_document") as mock_upsert_document,
             patch("app.routes.events.create_document_chunks") as mock_create_chunks,
             patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+            patch("app.routes.events.get_document_by_file_path") as mock_get_document,
             patch("app.routes.events.get_db") as mock_get_db,
         ):
             # Configure mocks
@@ -58,11 +59,12 @@ class TestProcessFileChangeEndpoint:
             mock_upsert_document.return_value = 123
             mock_create_chunks.return_value = [{"id": 1}, {"id": 2}]
             mock_upsert_chunks.return_value = [1, 2]
+            mock_get_document.return_value = None  # No existing document
             mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
             mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
             # Act
-            response = client.post("/file_events/", json=valid_file_event_payload)
+            response = client.post("/file_events/binary/", json=valid_file_event_payload)
 
             # Assert
             assert response.status_code == 200
@@ -85,14 +87,16 @@ class TestProcessFileChangeEndpoint:
 
         with (
             patch("app.routes.events.FileProcessorRegistry") as mock_registry,
+            patch("app.routes.events.get_document_by_file_path") as mock_get_document,
             patch("app.routes.events.get_db") as mock_get_db,
         ):
             mock_registry.get_processor.side_effect = ValueError("Unsupported file type")
+            mock_get_document.return_value = None  # No existing document
             mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
             mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
             # Act
-            response = client.post("/file_events/", json=unsupported_payload)
+            response = client.post("/file_events/binary/", json=unsupported_payload)
 
             # Assert
             assert response.status_code == 400
@@ -120,7 +124,7 @@ class TestProcessFileChangeEndpoint:
         ]
 
         for payload in invalid_payloads:
-            response = client.post("/file_events/", json=payload)
+            response = client.post("/file_events/binary/", json=payload)
             assert response.status_code == 422  # Unprocessable Entity for validation errors
 
     @pytest.mark.asyncio
@@ -139,7 +143,7 @@ class TestProcessFileChangeEndpoint:
 
             # Mock all dependencies
             mock_processor = Mock()
-            mock_processor.extract_text.return_value = (f"Content for {event_type}", {})
+            mock_processor.parse_content.return_value = (f"Content for {event_type}", {})
 
             with (
                 patch("app.routes.events.FileProcessorRegistry") as mock_registry,
@@ -148,6 +152,7 @@ class TestProcessFileChangeEndpoint:
                 patch("app.routes.events.upsert_document") as mock_upsert_document,
                 patch("app.routes.events.create_document_chunks") as mock_create_chunks,
                 patch("app.routes.events.upsert_document_chunks") as mock_upsert_chunks,
+                patch("app.routes.events.get_document_by_file_path") as mock_get_document,
                 patch("app.routes.events.get_db") as mock_get_db,
             ):
                 mock_registry.get_processor.return_value = mock_processor
@@ -156,10 +161,11 @@ class TestProcessFileChangeEndpoint:
                 mock_upsert_document.return_value = 456
                 mock_create_chunks.return_value = [{"id": 1}]
                 mock_upsert_chunks.return_value = [1]
+                mock_get_document.return_value = None  # No existing document
                 mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
                 mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
-                response = client.post("/file_events/", json=payload)
+                response = client.post("/file_events/binary/", json=payload)
 
                 # All event types should be processed successfully
                 assert response.status_code == 200

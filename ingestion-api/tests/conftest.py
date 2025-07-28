@@ -2,11 +2,12 @@
 Shared test fixtures and utilities.
 """
 
+import base64
 from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
-from app.models.events import EventType, FileChangeEvent
+from app.models.events import BinaryFileChangeEvent, EventType, TextFileChangeEvent
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -18,27 +19,32 @@ def mock_db_session():
 
 
 @pytest.fixture
-def sample_file_change_event() -> FileChangeEvent:
-    """Create a sample FileChangeEvent for testing."""
-    return FileChangeEvent(
+def sample_text_file_event() -> TextFileChangeEvent:
+    """Create a sample TextFileChangeEvent for testing."""
+    return TextFileChangeEvent(
         event_type=EventType.MODIFIED,
-        file_content=b"This is sample file content for testing.",
+        file_content="This is sample file content for testing.",
         file_path="/path/to/test/document.txt",
         timestamp=datetime(2024, 1, 15, 10, 30, 0),
-        metadata={"file_size": 42, "author": "test_user"},
     )
 
 
 @pytest.fixture
-def sample_pdf_event() -> FileChangeEvent:
-    """Create a sample PDF FileChangeEvent for testing."""
-    return FileChangeEvent(
-        event_type=EventType.CREATED,
-        file_content=b"%PDF-1.4 fake pdf content",
-        file_path="/path/to/test/document.pdf",
-        timestamp=datetime(2024, 1, 15, 11, 0, 0),
-        metadata={"file_size": 1024},
-    )
+def sample_binary_file_event() -> BinaryFileChangeEvent:
+    """Create a sample BinaryFileChangeEvent for testing."""
+    # Base64 encode the binary content
+    pdf_content = b"%PDF-1.4 fake pdf content"
+    encoded_content = base64.b64encode(pdf_content).decode()
+
+    # Create the event with the base64 string - the field validator will convert it to bytes
+    event_data = {
+        "event_type": EventType.CREATED,
+        "file_content": encoded_content,  # This will be converted to bytes by the validator
+        "file_path": "/path/to/test/document.pdf",
+        "timestamp": datetime(2024, 1, 15, 11, 0, 0),
+    }
+
+    return BinaryFileChangeEvent(**event_data)
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 [project]
 name = "ingestion-api"
-version = "0.1.0"
+version = "0.1.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -8,18 +8,19 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.116.1",
     "greenlet>=3.2.3",
-    "langchain>=0.3.26",
+    "langchain>=0.3.27",
     "langchain-community>=0.3.27",
-    "langchain-openai>=0.3.27",
-    "openai>=1.95.0",
+    "langchain-openai>=0.3.28",
+    "openai>=1.97.1",
     "pgvector>=0.4.1",
     "psycopg>=3.2.9",
     "pydantic-settings>=2.10.1",
-    "pypdf>=5.7.0",
+    "pypdf>=5.9.0",
     "pypdf2>=3.0.1",
     "sqlalchemy>=2.0.41",
     "structlog>=25.4.0",
     "note-rags-db",
+    "pyyaml>=6.0.2",
 ]
 
 [build-system]
@@ -32,7 +33,7 @@ packages = ["app"]
 [dependency-groups]
 test = [
     "pytest>=8.4.1",
-    "pytest-asyncio>=1.0.0",
+    "pytest-asyncio>=1.1.0",
     "pytest-mock>=3.14.1",
     "httpx>=0.28.1",
     "python-dotenv>=1.1.1",

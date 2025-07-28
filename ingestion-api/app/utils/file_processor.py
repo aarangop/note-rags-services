@@ -1,26 +1,52 @@
 import os
+import re
 import tempfile
 from abc import ABC, abstractmethod
 from typing import Any
 
+import yaml
 from langchain_community.document_loaders import PyPDFLoader
+
+
+class FileProcessingError(Exception):
+    pass
+
+
+class MetadataProcessingError(FileProcessingError):
+    pass
 
 
 class FileProcessor(ABC):
     @abstractmethod
-    def extract_text(self, content: bytes) -> tuple[str, dict[str, Any]]:
+    def parse_content(self, content: bytes) -> tuple[str, dict[str, Any]]:
         raise NotImplementedError()
 
 
 class MarkdownFileProcessor(FileProcessor):
-    def extract_text(self, content: bytes) -> tuple[str, dict[str, Any]]:
-        # TODO: Extract metadata from frontmatter
-        metadata: dict[str, Any] = {}
-        return content.decode("utf-8"), metadata
+    def extract_metadata(self, content: str) -> tuple[str, dict | None]:
+        # Extract frontmatter between --- delimiters
+        frontmatter_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+        if frontmatter_match:
+            frontmatter_content = frontmatter_match.group(1)
+            try:
+                metadata = yaml.safe_load(frontmatter_content) or {}
+                # Remove frontmatter from content
+                content = content[frontmatter_match.end() :]
+                return content, metadata
+            except yaml.YAMLError as e:
+                # If YAML parsing fails, just continue with empty metadata
+                raise FileProcessingError("Failed to extract metadata") from e
+        return content, None
+
+    def parse_content(self, content: bytes) -> tuple[str, dict[str, Any]]:
+        content_str = content.decode("utf-8")
+        content_str, metadata = self.extract_metadata(content_str)
+
+        return content_str, metadata if metadata else {}
 
 
 class PDFFileProcessor(FileProcessor):
-    def extract_text(self, content: bytes) -> tuple[str, dict[str, Any]]:
+    def parse_content(self, content: bytes) -> tuple[str, dict[str, Any]]:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
             temp_file.write(content)
             temp_path = temp_file.name
