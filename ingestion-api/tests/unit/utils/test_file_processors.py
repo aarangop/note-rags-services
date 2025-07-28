@@ -5,8 +5,6 @@ These tests verify that file processors correctly extract text and metadata
 from different file formats.
 """
 
-import datetime
-
 import pytest
 from app.utils.file_processor import (
     FileProcessingError,
@@ -72,6 +70,53 @@ Content for section 1.
         assert "àáâã" in text
         assert isinstance(metadata, dict)
 
+    def test_extract_text_with_latin1_encoding(self):
+        """Test extracting text from Latin-1 encoded content that would fail UTF-8."""
+        # Arrange
+        processor = MarkdownFileProcessor()
+        # Create content with the problematic byte 0xb5 (µ symbol in Latin-1)
+        latin1_content = "# Document\n\nThis has a µ (micro) symbol and other chars: àáâãäåæç"
+        content = latin1_content.encode("latin-1")  # This creates the 0xb5 byte
+
+        # Act
+        text, metadata = processor.parse_content(content)
+
+        # Assert
+        assert "µ" in text  # Should successfully decode the micro symbol
+        assert "àáâãäåæç" in text
+        assert isinstance(metadata, dict)
+
+    def test_extract_text_with_windows1252_encoding(self):
+        """Test extracting text from Windows-1252 encoded content."""
+        # Arrange
+        processor = MarkdownFileProcessor()
+        # Create content with specific bytes that are valid in Windows-1252 but different from Latin-1
+        # Byte 0x80 is Euro symbol in Windows-1252 but undefined in Latin-1
+        content = b"# Document\n\nWindows char: \x80"  # Euro symbol
+
+        # Act
+        text, metadata = processor.parse_content(content)
+
+        # Assert
+        assert "Windows char:" in text
+        assert isinstance(metadata, dict)
+
+    def test_extract_text_with_invalid_encoding_fallback(self):
+        """Test that invalid bytes are handled gracefully with replacement."""
+        # Arrange
+        processor = MarkdownFileProcessor()
+        # Create content with bytes that are invalid in all common encodings
+        content = b"# Document\n\nInvalid bytes: \xff\xfe\xfd"
+
+        # Act
+        text, metadata = processor.parse_content(content)
+
+        # Assert
+        assert "# Document" in text
+        assert "Invalid bytes:" in text
+        # Should contain replacement characters for invalid bytes
+        assert isinstance(metadata, dict)
+
     def test_extract_text_with_code_blocks(self):
         """Test extracting text that includes code blocks."""
         # Arrange
@@ -126,7 +171,7 @@ This is the main content of the document.
         assert metadata["title"] == "Test Document"
         assert metadata["author"] == "John Doe"
         assert metadata["tags"] == ["test", "markdown"]
-        assert metadata["created"] == datetime.date(2023, 1, 1)
+        assert metadata["created"] == "2023-01-01"
         assert metadata["version"] == 1.0
 
         # Text should not contain frontmatter

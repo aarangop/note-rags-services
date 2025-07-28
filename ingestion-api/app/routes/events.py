@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
-from app.models.events import BinaryFileChangeEvent, TextFileChangeEvent
+from app.models.events import FileChangeEvent
 from app.models.responses import FileProcessingResponse
 from app.services.document_service import (
     check_document_changed,
@@ -22,97 +22,91 @@ from app.utils.text_splitter import split_text
 router = APIRouter(prefix="/file_events")
 
 
-async def _process_file_content(
-    file_path: str, content_bytes: bytes, metadata: dict | None, db: AsyncSession
-) -> FileProcessingResponse:
+@router.post("/", response_model=FileProcessingResponse)
+async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_db)):
     """
-    Common file processing logic for both text and binary endpoints.
+    Process any file change event.
+
+    The processor is selected based on file extension, not API endpoint.
+    This keeps the API simple while allowing specialized processing.
     """
     try:
-        processor = FileProcessorRegistry.get_processor(file_path)
-    except ValueError:
+        # Get appropriate processor based on file extension
+        processor = FileProcessorRegistry.get_processor(event.file_path)
+    except ValueError as e:
         raise HTTPException(
-            status_code=400, detail=f"File {file_path} not supported"
-        ) from Exception
+            status_code=400, detail=f"File type not supported: {event.file_path}"
+        ) from e
 
     try:
-        text, extracted_metadata = processor.parse_content(content_bytes)
+        # All processors work with bytes - let them handle the interpretation
+        text, extracted_metadata = processor.parse_content(event.file_content)
 
         # Merge provided metadata with extracted metadata
-        final_metadata = metadata or {}
+        final_metadata = event.metadata or {}
         if extracted_metadata:
             final_metadata.update(extracted_metadata)
 
-        document = await get_document_by_file_path(db=db, file_path=file_path)
-
-        # Check if document changed
+        # Check if document exists and has changed
+        document = await get_document_by_file_path(db=db, file_path=event.file_path)
         if document and not check_document_changed(db_document=document, new_content=text):
             return FileProcessingResponse(
                 document_id=document.id, message="File unchanged", chunks_processed=0
             )
 
+        # Process the content
         chunks = split_text(text)
         embeddings = await get_embeddings(chunks)
 
-        # First create or update document.
+        # Store in database
         document_id = await upsert_document(
-            db=db, content=text, file_path=file_path, metadata=final_metadata
+            db=db, content=text, file_path=event.file_path, metadata=final_metadata
         )
 
-        chunks = create_document_chunks(embeddings=embeddings, text=chunks, document_id=document_id)
-        chunk_ids = await upsert_document_chunks(db=db, document_id=document_id, chunks=chunks)
+        chunk_objects = create_document_chunks(
+            embeddings=embeddings, text=chunks, document_id=document_id
+        )
+
+        chunk_ids = await upsert_document_chunks(
+            db=db, document_id=document_id, chunks=chunk_objects
+        )
+
         await db.commit()
 
         return FileProcessingResponse(
             document_id=document_id,
-            message=f"File {file_path} processed. {len(chunk_ids)} chunks upserted",
+            message=f"File {event.file_path} processed successfully",
             chunks_processed=len(chunk_ids),
         )
+
     except MetadataProcessingError as e:
         await db.rollback()
-        raise MetadataProcessingError(f"Failed to parse metadata for file {file_path}") from e
+        raise HTTPException(
+            status_code=422, detail=f"Failed to parse metadata for file {event.file_path}: {str(e)}"
+        ) from e
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}") from e
-
-
-@router.post("/text/", response_model=FileProcessingResponse)
-async def process_text_file_change(event: TextFileChangeEvent, db: AsyncSession = Depends(get_db)):
-    """
-    Process text-based file changes (markdown, txt, etc.).
-    Content is sent as plain text.
-    """
-    # Convert text content to bytes for processor
-    content_bytes = event.file_content.encode("utf-8")
-    return await _process_file_content(
-        file_path=event.file_path, content_bytes=content_bytes, metadata=event.metadata, db=db
-    )
-
-
-@router.post("/binary/", response_model=FileProcessingResponse)
-async def process_binary_file_change(
-    event: BinaryFileChangeEvent, db: AsyncSession = Depends(get_db)
-):
-    """
-    Process binary file changes (PDFs, images, etc.).
-    Content is sent as base64-encoded string and automatically decoded to bytes.
-    """
-    # event.file_content is already bytes thanks to the validator
-    return await _process_file_content(
-        file_path=event.file_path, content_bytes=event.file_content, metadata=event.metadata, db=db
-    )
+        raise e
 
 
 @router.delete("/", response_model=FileProcessingResponse)
 async def delete_file(
-    file_path: str = Query(..., description="Path to the file to delete from the database"),
+    file_path: str = Query(..., description="Path to the file to delete"),
     db: AsyncSession = Depends(get_db),
 ):
-    # Try to find document
-    if await delete_document(db, file_path):
+    """Delete a file and its associated document chunks."""
+    try:
+        deleted = await delete_document(db, file_path)
         await db.commit()
-        return FileProcessingResponse(
-            message=f"Document '{file_path}' and its associated chunks deleted",
-        )
-    else:
-        return FileProcessingResponse(message="No document found, nothing deleted")
+
+        if deleted:
+            return FileProcessingResponse(
+                message=f"Document '{file_path}' and associated chunks deleted"
+            )
+        else:
+            return FileProcessingResponse(message=f"No document found for '{file_path}'")
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error deleting file {file_path}: {str(e)}"
+        ) from e

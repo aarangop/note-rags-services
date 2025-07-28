@@ -64,15 +64,17 @@ class TestProcessFileChangeEndpoint:
             mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
             # Act
-            response = client.post("/file_events/binary/", json=valid_file_event_payload)
+            response = client.post("/file_events/", json=valid_file_event_payload)
 
-            # Assert
-            assert response.status_code == 200
-            response_data = response.json()
-            assert "message" in response_data
-            assert "document_id" in response_data
-            assert response_data["document_id"] == 123
-            assert "2 chunks upserted" in response_data["message"]
+        # Assert
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "message" in response_data
+        assert "document_id" in response_data
+        assert "chunks_processed" in response_data
+        assert response_data["document_id"] == 123
+        assert response_data["chunks_processed"] == 2
+        assert "processed successfully" in response_data["message"]
 
     @pytest.mark.asyncio
     async def test_endpoint_returns_400_on_unsupported_file(self, client):
@@ -96,7 +98,7 @@ class TestProcessFileChangeEndpoint:
             mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
             # Act
-            response = client.post("/file_events/binary/", json=unsupported_payload)
+            response = client.post("/file_events/", json=unsupported_payload)
 
             # Assert
             assert response.status_code == 400
@@ -124,7 +126,7 @@ class TestProcessFileChangeEndpoint:
         ]
 
         for payload in invalid_payloads:
-            response = client.post("/file_events/binary/", json=payload)
+            response = client.post("/file_events/", json=payload)
             assert response.status_code == 422  # Unprocessable Entity for validation errors
 
     @pytest.mark.asyncio
@@ -165,7 +167,7 @@ class TestProcessFileChangeEndpoint:
                 mock_get_db.return_value.__aenter__ = lambda self: mock_get_db.return_value
                 mock_get_db.return_value.__aexit__ = lambda self, *args: None
 
-                response = client.post("/file_events/binary/", json=payload)
+                response = client.post("/file_events/", json=payload)
 
                 # All event types should be processed successfully
                 assert response.status_code == 200

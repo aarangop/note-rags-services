@@ -7,7 +7,7 @@ from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
-from app.models.events import BinaryFileChangeEvent, EventType, TextFileChangeEvent
+from app.models.events import EventType, FileChangeEvent
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -19,32 +19,34 @@ def mock_db_session():
 
 
 @pytest.fixture
-def sample_text_file_event() -> TextFileChangeEvent:
-    """Create a sample TextFileChangeEvent for testing."""
-    return TextFileChangeEvent(
-        event_type=EventType.MODIFIED,
-        file_content="This is sample file content for testing.",
-        file_path="/path/to/test/document.txt",
-        timestamp=datetime(2024, 1, 15, 10, 30, 0),
-    )
+def sample_file_change_event() -> FileChangeEvent:
+    """Create a sample FileChangeEvent for testing with text content."""
+    # Use dict construction to work around type checker
+    event_data = {
+        "event_type": EventType.MODIFIED,
+        "file_content": "This is sample file content for testing.",  # String -> bytes via validator
+        "file_path": "/path/to/test/document.md",  # Use .md since it's supported
+        "timestamp": datetime(2024, 1, 15, 10, 30, 0),
+    }
+    return FileChangeEvent(**event_data)
 
 
 @pytest.fixture
-def sample_binary_file_event() -> BinaryFileChangeEvent:
-    """Create a sample BinaryFileChangeEvent for testing."""
+def sample_binary_file_event() -> FileChangeEvent:
+    """Create a sample FileChangeEvent for testing with binary (base64) content."""
     # Base64 encode the binary content
     pdf_content = b"%PDF-1.4 fake pdf content"
     encoded_content = base64.b64encode(pdf_content).decode()
 
-    # Create the event with the base64 string - the field validator will convert it to bytes
+    # Use dict construction to work around type checker
     event_data = {
         "event_type": EventType.CREATED,
-        "file_content": encoded_content,  # This will be converted to bytes by the validator
+        "file_content": encoded_content,  # Base64 string -> bytes via validator
         "file_path": "/path/to/test/document.pdf",
         "timestamp": datetime(2024, 1, 15, 11, 0, 0),
     }
 
-    return BinaryFileChangeEvent(**event_data)
+    return FileChangeEvent(**event_data)
 
 
 @pytest.fixture

@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import tempfile
@@ -6,6 +7,27 @@ from typing import Any
 
 import yaml
 from langchain_community.document_loaders import PyPDFLoader
+
+
+def date_constructor(loader, node):
+    """Custom YAML constructor to convert dates to ISO format strings."""
+    value = loader.construct_yaml_timestamp(node)
+    if isinstance(value, datetime.date | datetime.datetime):
+        return value.isoformat()
+    return value
+
+
+def setup_yaml_loader():
+    """Set up YAML loader with custom date handling."""
+
+    # Create a custom SafeLoader class
+    class JSONSerializableLoader(yaml.SafeLoader):
+        pass
+
+    # Add constructor for timestamp tags to convert dates to ISO strings
+    JSONSerializableLoader.add_constructor("tag:yaml.org,2002:timestamp", date_constructor)
+
+    return JSONSerializableLoader
 
 
 class FileProcessingError(Exception):
@@ -29,7 +51,9 @@ class MarkdownFileProcessor(FileProcessor):
         if frontmatter_match:
             frontmatter_content = frontmatter_match.group(1)
             try:
-                metadata = yaml.safe_load(frontmatter_content) or {}
+                # Use custom loader to handle dates as ISO strings
+                loader_class = setup_yaml_loader()
+                metadata = yaml.load(frontmatter_content, Loader=loader_class) or {}
                 # Remove frontmatter from content
                 content = content[frontmatter_match.end() :]
                 return content, metadata
@@ -39,7 +63,21 @@ class MarkdownFileProcessor(FileProcessor):
         return content, None
 
     def parse_content(self, content: bytes) -> tuple[str, dict[str, Any]]:
-        content_str = content.decode("utf-8")
+        # Try multiple encodings to handle different file encodings gracefully
+        encodings_to_try = ["utf-8", "utf-8-sig", "latin-1", "windows-1252", "iso-8859-1"]
+
+        content_str = None
+        for encoding in encodings_to_try:
+            try:
+                content_str = content.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+
+        if content_str is None:
+            # If all encodings fail, use 'utf-8' with error handling
+            content_str = content.decode("utf-8", errors="replace")
+
         content_str, metadata = self.extract_metadata(content_str)
 
         return content_str, metadata if metadata else {}

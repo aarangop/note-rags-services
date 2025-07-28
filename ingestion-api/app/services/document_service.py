@@ -1,8 +1,10 @@
 import hashlib
+from pathlib import Path
 
 import structlog
 from note_rags_db.schemas import Document, DocumentChunk
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger(__name__)
@@ -17,48 +19,49 @@ def check_document_changed(db_document: Document, new_content: str) -> bool:
     return new_hash != db_document.content_hash
 
 
-async def upsert_document(
-    db: AsyncSession, file_path: str, content: str, metadata: dict | None = None
-) -> int:
+async def upsert_document(db: AsyncSession, file_path: str, content: str, metadata: dict) -> int:
     """Create or update document, return document ID"""
     document = await get_document_by_file_path(db, file_path)
-
     if document:
         if not check_document_changed(document, content):
             logger.debug("Document unchaged, skipping", document_id=document.id)
             return document.id
         document.content = content
         document.content_hash = calculate_content_hash(content)
-        # TODO: Handle metadata when Document model supports it
+        document.document_metadata = metadata
         # Clear existing chunks
         await db.execute(delete(DocumentChunk).where(DocumentChunk.document_id == document.id))
     else:
+        title = Path(file_path).stem
         content_hash = calculate_content_hash(content)
-        document = Document(file_path=file_path, content=content, content_hash=content_hash)
-        # TODO: Handle metadata when Document model supports it
-        db.add(document)
-        await db.flush()  # Get ID
+        try:
+            document = Document(
+                file_path=file_path,
+                content=content,
+                content_hash=content_hash,
+                title=title,
+                document_metadata=metadata,
+            )
+            db.add(document)
+            await db.flush()  # Get ID
+        except IntegrityError as e:
+            raise e
 
     return document.id
 
-async def delete_document(
-    db: AsyncSession, file_path: str
-):
+
+async def delete_document(db: AsyncSession, file_path: str):
     document = await get_document_by_file_path(db, file_path)
 
     if not document:
         return False
 
-    await db.execute(
-        delete(DocumentChunk).where(DocumentChunk.document_id == document.id)
-    )
+    await db.execute(delete(DocumentChunk).where(DocumentChunk.document_id == document.id))
 
-    await db.execute(
-        delete(Document).where(Document.id == document.id)
-    )
-
+    await db.execute(delete(Document).where(Document.id == document.id))
 
     return True
+
 
 async def get_document_by_file_path(db: AsyncSession, file_path: str) -> Document | None:
     """Retrieve a document by its file path
