@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.models.note import NoteCreate, NoteUpdate
+from app.models.note import Note, NoteCreate, NotesPage, NoteUpdate
 from app.repositories.notes_repository import (
     NoteNotFoundError,
     NotesRepository,
@@ -15,7 +15,22 @@ class NoteNotFoundHTTPException(HTTPException):
         super().__init__(status_code=404, detail=detail)
 
 
-@router.get("/{id}")
+@router.get("/", response_model=NotesPage)
+async def get_notes(
+    repository: NotesRepository = Depends(get_notes_repository),
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(10, ge=1, le=100, description="Items per page"),
+):
+    offset = (page - 1) * size
+    notes = await repository.find_all(limit=size, offset=offset)
+    total = await repository.count()
+
+    return NotesPage(
+        items=notes, page=page, size=size, total=total, pages=(total + size - 1) // size
+    )
+
+
+@router.get("/{id}", response_model=Note)
 async def get_note_by_id(id: int, repository: NotesRepository = Depends(get_notes_repository)):
     try:
         note = await repository.find_by_id(id)
@@ -24,7 +39,7 @@ async def get_note_by_id(id: int, repository: NotesRepository = Depends(get_note
         raise NoteNotFoundHTTPException(str(e)) from e
 
 
-@router.post("/")
+@router.post("/", response_model=Note)
 async def create_new_note(
     note: NoteCreate, repository: NotesRepository = Depends(get_notes_repository)
 ):
@@ -32,7 +47,7 @@ async def create_new_note(
     return new_note
 
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=Note)
 async def update_note(
     id: int, note: NoteUpdate, repository: NotesRepository = Depends(get_notes_repository)
 ):

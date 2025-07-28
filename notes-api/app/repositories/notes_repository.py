@@ -1,6 +1,6 @@
 from fastapi import Depends
 from note_rags_db.schemas import Document
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
@@ -114,6 +114,45 @@ class NotesRepository:
         except Exception:
             await self.db.rollback()
             return False
+
+    async def find_all(self, offset=0, limit=50) -> list[Note] | None:
+        """
+        Retrieve a list of notes with pagination support.
+
+        Args:
+            offset (int, optional): The number of records to skip. Defaults to 0.
+            limit (int, optional): The maximum number of records to return. Defaults to 50.
+
+        Returns:
+            list[Note] | None: A list of Note objects if records exist, or None if no records are found.
+
+        Raises:
+            Exception: If there is an error during database query execution.
+        """
+        try:
+            query = select(Document).offset(offset).limit(limit).order_by(Document.id)
+            result = await self.db.execute(query)
+            documents = result.scalars().all()
+            return [Note.from_document(doc) for doc in documents]
+        except Exception:
+            raise
+
+    async def count(self) -> int:
+        """
+        Count the total number of documents in the database.
+
+        Returns:
+            int: The count of documents. Returns 0 if no documents are found.
+
+        Raises:
+            Exception: If there's an error during database operation.
+        """
+        try:
+            query = select(func.count(Document.id))
+            result = await self.db.execute(query)
+            return result.scalar() or 0
+        except Exception:
+            raise
 
     async def find_by_id(self, note_id: int) -> Note | None:
         """

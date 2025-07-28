@@ -44,3 +44,11 @@ class Note(BaseNote):
             if hasattr(document, "document_metadata") and document.document_metadata
             else {},
         )
+
+
+class NotesPage(BaseModel):
+    items: list[Note] | None
+    page: int
+    size: int
+    total: int
+    pages: int
