@@ -41,8 +41,8 @@ class NotesRepository:
         try:
             document = note.to_db_model()
             self.db.add(document)
-            await self.db.refresh(document)
             await self.db.commit()
+            await self.db.refresh(document)
 
             # Convert created Document to NoteResponse using the class method
             return Note.from_document(document)

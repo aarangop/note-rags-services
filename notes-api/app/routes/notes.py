@@ -6,6 +6,7 @@ from app.repositories.notes_repository import (
     NotesRepository,
     get_notes_repository,
 )
+from app.services.notes_service import NotesService, get_notes_service
 
 router = APIRouter(tags=["notes"])
 
@@ -40,10 +41,8 @@ async def get_note_by_id(id: int, repository: NotesRepository = Depends(get_note
 
 
 @router.post("/", response_model=Note)
-async def create_new_note(
-    note: NoteCreate, repository: NotesRepository = Depends(get_notes_repository)
-):
-    new_note = await repository.create(note)
+async def create_new_note(note: NoteCreate, service: NotesService = Depends(get_notes_service)):
+    new_note = await service.create(note)
     return new_note
 
 
