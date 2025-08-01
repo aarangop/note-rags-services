@@ -11,3 +11,11 @@ async def similarity_search(db: AsyncSession, query_embedding: list[float], limi
     )
     result = await db.execute(statement)
     return result.scalars().all()
+
+
+class ContextService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    def similarity_search(self, query: str) -> list[str]:
+        raise NotImplementedError()

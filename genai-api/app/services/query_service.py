@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_config
 from app.models.query import Query
-from app.services.context import similarity_search
-from app.services.embeddings import get_embeddings
+from app.services.context_service import similarity_search
+from app.services.embeddings_service import get_embeddings
 
 prompt = hub.pull("rlm/rag-prompt")
 

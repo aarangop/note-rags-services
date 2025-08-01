@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import chats_router, contexts_router, queries_router
+from app.routes import contexts_router, conversations_router, queries_router
 
 app = FastAPI(
     title="Chat API",
@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chats_router)
+app.include_router(conversations_router)
 app.include_router(queries_router)
 app.include_router(contexts_router)
 
