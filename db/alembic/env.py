@@ -1,21 +1,20 @@
-from logging.config import fileConfig
-import sys
 import os
+import sys
+from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+
+# Import your models and base
+from note_rags_db.db import Base
+from note_rags_db.schemas import Document, DocumentChunk  # noqa: F401
+from sqlalchemy import engine_from_config, pool
 
 # Add the src directory to the Python path
 current_dir = Path(__file__).parent.parent
 src_dir = current_dir / "src"
 sys.path.insert(0, str(src_dir))
 
-# Import your models and base
-from note_rags_db.db import Base
-from note_rags_db.schemas import Document, DocumentChunk  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -69,11 +68,10 @@ def run_migrations_online() -> None:
     """
     # Use DATABASE_URL environment variable if no URL is configured
     url = os.environ.get("DATABASE_URL")
-    print(url) 
     # Update the configuration with the URL
     if url:
         config.set_main_option("sqlalchemy.url", url)
-    
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -81,9 +79,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
