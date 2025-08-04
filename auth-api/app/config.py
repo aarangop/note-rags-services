@@ -53,6 +53,12 @@ class Config(BaseSettings):
         default=30, description="Account lockout duration in minutes"
     )
 
+    # Database Configuration
+    db_url: str = Field(default=..., alias="DB_URL")
+    db_user: str = Field(default=..., alias="DB_USERNAME")
+    db_password: SecretStr = Field(default=..., alias="DB_PASSWORD")
+    db_name: str = Field(default="note_rags_db", alias="DB_NAME")
+
     # Application Configuration
     app_name: str = Field(default="Auth API", description="Application name")
     app_version: str = Field(default="0.1.0", description="Application version")
@@ -60,6 +66,8 @@ class Config(BaseSettings):
     log_level: str = Field(
         default="INFO", description="Logging level", validation_alias="LOG_LEVEL"
     )
+
+    # Database configuration
 
     def get_private_key(self) -> str | None:
         """Get the RSA private key content."""

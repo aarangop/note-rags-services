@@ -34,7 +34,7 @@ class JWTConfig(BaseSettings):
 
 
 class JWTServiceBuilder:
-    def __init__(self, config: JWTConfig | None):
+    def __init__(self, config: JWTConfig | None = None):
         self.config = (
             config
             if config
@@ -223,3 +223,23 @@ class JWTService:
         except Exception as e:
             logger.error("Failed to verify token", error=e)
             raise e
+
+    def get_user_id_from_token(self, token: str) -> uuid.UUID | None:
+        """
+        Extract user ID from a valid token.
+
+        Args:
+            token: JWT token string
+
+        Returns:
+            User UUID if token is valid, None if invalid
+        """
+        try:
+            payload = self.verify_token(token)
+            user_id_str = payload.get("sub")
+            if user_id_str:
+                return uuid.UUID(user_id_str)
+            return None
+        except Exception as e:
+            logger.warning("Failed to extract ID from token", error=e)
+            return None
