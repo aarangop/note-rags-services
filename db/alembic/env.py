@@ -1,4 +1,4 @@
-import os
+import os  # noqa: I001
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -7,7 +7,7 @@ from alembic import context
 
 # Import your models and base
 from note_rags_db.db import Base
-from note_rags_db.schemas import Document, DocumentChunk  # noqa: F401
+import note_rags_db.schemas  # noqa: F401
 from sqlalchemy import engine_from_config, pool
 
 # Add the src directory to the Python path
