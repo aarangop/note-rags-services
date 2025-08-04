@@ -4,13 +4,15 @@ members = [
     "ingestion-api",
     "db",
     "notes-api",
+    "auth-lib",
+    "auth-api",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.12.3",
+    "ruff>=0.12.7",
     "pytest>=8.4.1",
-    "pytest-asyncio>=1.0.0",
+    "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
     "httpx>=0.28.1",
     "pytest-mock>=3.14.1",
