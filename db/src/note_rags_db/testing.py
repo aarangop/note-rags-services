@@ -40,6 +40,13 @@ class MockSession:
 
     def refresh(self, obj: Any) -> None:
         """Mock refreshing an object."""
+        # Check if there's a custom refresh handler configured
+        if hasattr(self, "_refresh_handler") and self._refresh_handler:
+            self._refresh_handler(obj)
+
+    def set_refresh_handler(self, handler):
+        """Set a custom refresh handler for this session."""
+        self._refresh_handler = handler
 
     def merge(self, obj: Any) -> Any:
         """Mock merging an object."""
@@ -115,6 +122,13 @@ class MockAsyncSession:
 
     async def refresh(self, obj: Any) -> None:
         """Mock refreshing an object."""
+        # Check if there's a custom refresh handler configured
+        if hasattr(self, "_refresh_handler") and self._refresh_handler:
+            self._refresh_handler(obj)
+
+    def set_refresh_handler(self, handler):
+        """Set a custom refresh handler for this session."""
+        self._refresh_handler = handler
 
     async def merge(self, obj: Any) -> Any:
         """Mock merging an object."""
@@ -222,6 +236,11 @@ class MockResult:
     def scalars(self):
         """Mock scalars method."""
         return MockScalars(self._results.get("scalars_results", []))
+
+    def scalar_one_or_none(self):
+        """Mock scalar_one_or_none method."""
+        scalars = self.scalars()
+        return scalars.one_or_none()
 
 
 class MockScalars:

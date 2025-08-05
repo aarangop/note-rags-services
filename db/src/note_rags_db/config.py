@@ -21,22 +21,27 @@ def build_database_url(
 
 
 class DBConfig(BaseSettings):
-    db_host: str = Field(description="Database host")
+    # Complete database URL (takes precedence if provided)
+    db_url: str | None = Field(
+        default=None, description="Complete database URL (overrides individual components)"
+    )
+    
+    # Individual database connection components (used when db_url is not provided)
+    db_host: str = Field(default="localhost", description="Database host")
     db_port: int | None = Field(default=None, description="Database port")
-    db_user: str = Field(description="Database username")
-    db_password: SecretStr = Field(description="Database password")
-    db_name: str = Field(description="Database name")
-    db_dialect: str = Field(description="Database dialect (e.g., postgresql, mysql, sqlite)")
+    db_user: str | None = Field(default=None, description="Database username")
+    db_password: SecretStr | None = Field(default=None, description="Database password")
+    db_name: str | None = Field(default=None, description="Database name")
+    db_dialect: str = Field(default="postgresql", description="Database dialect (e.g., postgresql, mysql, sqlite)")
     db_driver: str | None = Field(
         default=None, description="Database driver (e.g., psycopg2, pymysql)"
-    )
-    db_url: str | None = Field(
-        default=None, description="Complete database URL (overrides other fields)"
     )
 
     @field_validator("db_dialect")
     @classmethod
     def validate_dialect(cls, v):
+        if v is None:
+            return v
         supported_dialects = ["postgresql", "mysql", "sqlite", "oracle", "mssql"]
         if v not in supported_dialects:
             raise ValueError(f"Unsupported dialect: {v}. Supported: {supported_dialects}")
@@ -48,6 +53,17 @@ class DBConfig(BaseSettings):
         if v is not None and (v < 1 or v > 65535):
             raise ValueError("Port must be between 1 and 65535")
         return v
+    
+    def model_post_init(self, __context) -> None:
+        """Validate that either db_url is provided or required individual components are provided."""
+        if not self.db_url:
+            # If no complete URL provided, ensure required individual components are present
+            if not self.db_user:
+                raise ValueError("db_user is required when db_url is not provided")
+            if not self.db_name:
+                raise ValueError("db_name is required when db_url is not provided")
+            if not self.db_dialect:
+                raise ValueError("db_dialect is required when db_url is not provided")
 
     def get_db_url(self, async_driver: bool = False) -> str:
         """
@@ -67,8 +83,8 @@ class DBConfig(BaseSettings):
 
         dialect_driver = f"{dialect}+{driver}" if driver else dialect
 
-        username = quote_plus(self.db_user)
-        password = quote_plus(self.db_password.get_secret_value())
+        username = quote_plus(self.db_user) if self.db_user else ""
+        password = quote_plus(self.db_password.get_secret_value()) if self.db_password else ""
 
         if self.db_dialect == "sqlite":
             if driver:

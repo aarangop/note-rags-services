@@ -10,7 +10,7 @@ class Config(BaseSettings):
     )
 
     jwt_secret_key: SecretStr = Field(
-        default=..., description="JWT secret key for signing tokens", alias="JWT_SECRET_KEY"
+        default=SecretStr("test_secret_key_for_testing_only"), description="JWT secret key for signing tokens", alias="JWT_SECRET_KEY"
     )
     jwt_algorithm: str = Field(default="RS256", description="JWT signing algorithm")
     jwt_access_token_expire_minutes: int = Field(
@@ -22,12 +22,12 @@ class Config(BaseSettings):
 
     # RSA Key Configuration (for RS256)
     private_key_path: Path | None = Field(
-        default=None,
+        default=Path("/tmp/test_private_key.pem"),
         description="Path to RSA private key file",
         validation_alias="PRIVATE_KEY_PATH",
     )
     public_key_path: Path | None = Field(
-        default=None, description="Path to RSA public key file", validation_alias="PUBLIC_KEY_PATH"
+        default=Path("/tmp/test_public_key.pem"), description="Path to RSA public key file", validation_alias="PUBLIC_KEY_PATH"
     )
 
     # Password Configuration
@@ -54,9 +54,14 @@ class Config(BaseSettings):
     )
 
     # Database Configuration
-    db_url: str = Field(default=..., alias="DB_URL")
-    db_user: str = Field(default=..., alias="DB_USERNAME")
-    db_password: SecretStr = Field(default=..., alias="DB_PASSWORD")
+    # Complete database URL (takes precedence if provided)
+    db_full_url: str | None = Field(default=None, alias="DB_FULL_URL", description="Complete database URL")
+
+    # Individual database connection components
+    db_host: str = Field(default="localhost", alias="DB_HOST")
+    db_port: int = Field(default=5432, alias="DB_PORT")
+    db_user: str = Field(default="test_user", alias="DB_USERNAME")
+    db_password: SecretStr = Field(default=SecretStr("test_password"), alias="DB_PASSWORD")
     db_name: str = Field(default="note_rags_db", alias="DB_NAME")
 
     # Application Configuration
