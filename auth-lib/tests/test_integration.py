@@ -3,7 +3,7 @@
 import uuid
 
 import pytest
-from src.jwt_service import JWTConfig, JWTServiceBuilder
+from src.auth_lib.jwt_service import JWTConfig, JWTServiceBuilder
 
 
 class TestJWTIntegration:

@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from jose import jwt
-from src.jwt_service import JWTService, MissingPublicKeyError
+from src.auth_lib.jwt_service import JWTService, MissingPublicKeyError
 
 
 class TestJWTService:

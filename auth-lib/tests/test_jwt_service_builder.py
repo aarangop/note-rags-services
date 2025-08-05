@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from src.jwt_service import JWTConfig, JWTService, JWTServiceBuilder
+from src.auth_lib.jwt_service import JWTConfig, JWTService, JWTServiceBuilder
 
 
 class TestJWTServiceBuilder:

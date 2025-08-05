@@ -5,6 +5,7 @@ description = "Shared package with authentication utilities"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "bcrypt>=4.3.0",
     "cryptography>=45.0.5",
     "fastapi[standard]>=0.116.1",
     "jose>=1.0.0",
