@@ -1,6 +1,6 @@
 [project]
 name = "auth-lib"
-version = "0.1.1"
+version = "0.1.2"
 description = "Shared package with authentication utilities"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -10,8 +10,10 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "jose>=1.0.0",
     "note-rags-db",
+    "pyjwt>=2.10.1",
     "python-jose[cryptography]>=3.5.0",
     "structlog>=25.4.0",
+    "note-rags-db"
 ]
 
 [project.optional-dependencies]

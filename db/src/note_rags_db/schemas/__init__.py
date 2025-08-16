@@ -1,6 +1,6 @@
 from .conversation import Conversation, ConversationContext, Message, MessageRole
 from .document import Document, DocumentChunk, DocumentType
-from .user import RefreshToken, User
+from .user import User
 
 __all__ = [
     "Document",
@@ -11,5 +11,4 @@ __all__ = [
     "Message",
     "MessageRole",
     "User",
-    "RefreshToken",
 ]
