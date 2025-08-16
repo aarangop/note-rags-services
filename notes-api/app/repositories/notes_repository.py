@@ -3,7 +3,7 @@ from note_rags_db.schemas import Document
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.models.note import Note, NoteCreate, NoteUpdate
 
 
@@ -209,5 +209,5 @@ class NotesRepository:
             raise
 
 
-def get_notes_repository(db: AsyncSession = Depends(get_db)):
+def get_notes_repository(db: AsyncSession = Depends(get_async_db_session)):
     return NotesRepository(db)

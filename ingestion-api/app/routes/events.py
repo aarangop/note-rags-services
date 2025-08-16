@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.models.events import FileChangeEvent
 from app.models.responses import FileProcessingResponse
 from app.services.document_service import (
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/file_events")
 
 
 @router.post("/", response_model=FileProcessingResponse)
-async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_db)):
+async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_async_db_session)):
     """
     Process any file change event.
 
@@ -92,7 +92,7 @@ async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends
 @router.delete("/", response_model=FileProcessingResponse)
 async def delete_file(
     file_path: str = Query(..., description="Path to the file to delete"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db_session),
 ):
     """Delete a file and its associated document chunks."""
     try:

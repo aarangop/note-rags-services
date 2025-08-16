@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.models.note import Note, NoteCreate, NoteUpdate
 from app.repositories.notes_repository import NotesRepository, get_notes_repository
 from fastapi import Depends
@@ -30,6 +30,6 @@ class NotesService:
 
 
 def get_notes_service(
-    db: AsyncSession = Depends(get_db), repository: NotesRepository = Depends(get_notes_repository)
+    db: AsyncSession = Depends(get_async_db_session), repository: NotesRepository = Depends(get_notes_repository)
 ):
     return NotesService(db, repository)

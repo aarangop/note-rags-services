@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Config, get_config
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.models.query import ContextQuery, Query
 from app.services.context import similarity_search
 from app.services.embeddings import get_embeddings
@@ -19,7 +19,7 @@ class ContextResponse(BaseModel):
 
 @router.get("/")
 async def get_context(
-    query: ContextQuery, db: AsyncSession = Depends(get_db), config: Config = Depends(get_config)
+    query: ContextQuery, db: AsyncSession = Depends(get_async_db_session), config: Config = Depends(get_config)
 ):
     embedding = await get_embeddings(query.question, config)
     chunks = await similarity_search(db=db, query_embedding=embedding, limit=query.limit)

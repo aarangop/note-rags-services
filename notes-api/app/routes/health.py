@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_db
+from note_rags_db import get_async_db_session
 
 router = APIRouter(tags=["health"])
 
@@ -22,7 +22,7 @@ class APIStatus(BaseModel):
 
 
 @router.get("/")
-async def check_health(db: AsyncSession = Depends(get_db)):
+async def check_health(db: AsyncSession = Depends(get_async_db_session)):
     status = APIStatus(
         health_state=APIHealthState.UNHEALTHY,
     )

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.models.conversation import Conversation, ConversationCreate, ConversationUpdate
 
 
@@ -108,5 +108,5 @@ class ConversationRepository:
         return True
 
 
-def get_chat_repository(db: AsyncSession = Depends(get_db)):
+def get_chat_repository(db: AsyncSession = Depends(get_async_db_session)):
     return ConversationRepository(db)

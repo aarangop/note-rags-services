@@ -14,6 +14,7 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "greenlet>=3.2.3",
     "note-rags-db",
+    "auth-lib",
     "strawberry-graphql[fastapi]>=0.278.0",
 ]
 
@@ -26,3 +27,4 @@ packages = ["app"]
 
 [tool.uv.sources]
 note-rags-db = { workspace = true }
+auth-lib = { workspace = true }

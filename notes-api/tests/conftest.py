@@ -29,12 +29,12 @@ def mock_db_session():
 @pytest.fixture
 def test_client_with_db_mock(mock_db_session):
     """FastAPI test client with database dependency overridden"""
-    from app.db import get_db
+    from note_rags_db import get_async_db_session
 
     async def override_get_db():
         yield mock_db_session
 
-    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_async_db_session] = override_get_db
 
     with TestClient(app) as client:
         yield client, mock_db_session

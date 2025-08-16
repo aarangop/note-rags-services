@@ -9,7 +9,7 @@ import base64
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app.db import get_db
+from note_rags_db import get_async_db_session
 from app.main import app
 from fastapi.testclient import TestClient
 
@@ -27,7 +27,7 @@ def mock_db():
 def client(mock_db):
     """Create a test client for the FastAPI app with mocked database."""
     # Override the database dependency
-    app.dependency_overrides[get_db] = lambda: mock_db
+    app.dependency_overrides[get_async_db_session] = lambda: mock_db
     yield TestClient(app)
     # Clean up
     app.dependency_overrides = {}
