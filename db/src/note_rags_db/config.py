@@ -1,7 +1,9 @@
+from collections.abc import AsyncGenerator, Generator
 from urllib.parse import quote_plus
 
+from fastapi import Depends
 from pydantic import Field, SecretStr, field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -21,18 +23,21 @@ def build_database_url(
 
 
 class DBConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_file="../.env", env_file_encoding="utf-8", extra="ignore")
     # Complete database URL (takes precedence if provided)
     db_url: str | None = Field(
         default=None, description="Complete database URL (overrides individual components)"
     )
-    
+
     # Individual database connection components (used when db_url is not provided)
     db_host: str = Field(default="localhost", description="Database host")
     db_port: int | None = Field(default=None, description="Database port")
     db_user: str | None = Field(default=None, description="Database username")
     db_password: SecretStr | None = Field(default=None, description="Database password")
     db_name: str | None = Field(default=None, description="Database name")
-    db_dialect: str = Field(default="postgresql", description="Database dialect (e.g., postgresql, mysql, sqlite)")
+    db_dialect: str = Field(
+        default="postgresql", description="Database dialect (e.g., postgresql, mysql, sqlite)"
+    )
     db_driver: str | None = Field(
         default=None, description="Database driver (e.g., psycopg2, pymysql)"
     )
@@ -53,7 +58,7 @@ class DBConfig(BaseSettings):
         if v is not None and (v < 1 or v > 65535):
             raise ValueError("Port must be between 1 and 65535")
         return v
-    
+
     def model_post_init(self, __context) -> None:
         """Validate that either db_url is provided or required individual components are provided."""
         if not self.db_url:
@@ -140,3 +145,51 @@ class DBConfig(BaseSettings):
         async_engine = create_async_db_engine(self.get_async_url())
         async_session_factory = async_sessionmaker(bind=async_engine, class_=AsyncSession)
         return async_session_factory()
+
+
+def get_db_config() -> DBConfig:
+    """
+    FastAPI dependency that provides database configuration.
+
+    Returns:
+        DBConfig: Database configuration instance
+    """
+    return DBConfig()
+
+
+async def get_async_db_session(
+    config: DBConfig = Depends(get_db_config),
+) -> AsyncGenerator[AsyncSession, None]:
+    """
+    FastAPI dependency that provides an async database session with cleanup.
+
+    Args:
+        config: Database configuration instance
+
+    Yields:
+        AsyncSession: Database session for async operations
+    """
+    session = config.get_async_session()
+    try:
+        yield session
+    finally:
+        await session.close()
+
+
+def get_sync_db_session(
+    config: DBConfig = Depends(get_db_config),
+) -> Generator[Session, None, None]:
+    """
+    FastAPI dependency that provides a sync database session with cleanup.
+
+    Args:
+        config: Database configuration instance
+
+    Yields:
+        Session: Database session for sync operations
+    """
+    session = config.get_sync_session()
+    try:
+        yield session
+    finally:
+        session.close()
