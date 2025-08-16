@@ -14,6 +14,9 @@ COPY pyproject.toml uv.lock ./
 # Copy the db package (workspace dependency)
 COPY db/ ./db/
 
+# Copy the auth-lib package (workspace dependency)
+COPY auth-lib/ ./auth-lib/
+
 # Copy notes-api project files
 COPY notes-api/ ./notes-api/
 

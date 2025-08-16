@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import notes_router
 from app.routes.health import router as health_router
+from app.routes.auth_test import router as auth_test_router
 
 app = FastAPI(
     title="Notes API",
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(health_router, prefix="/health")
 app.include_router(notes_router, prefix="/notes")
+app.include_router(auth_test_router, prefix="/auth")
 
 
 @app.get("/")
