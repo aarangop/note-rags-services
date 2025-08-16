@@ -1,0 +1,4 @@
+# Dependencies for authentication scripts
+boto3>=1.26.0
+python-dotenv>=1.0.0
+PyJWT>=2.8.0  # Optional, for token debugging with --debug flag
