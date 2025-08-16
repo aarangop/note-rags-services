@@ -6,7 +6,7 @@ services:
     container_name: note-rags-postgres
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
@@ -23,12 +23,12 @@ services:
     container_name: note-rags-postgres-test
     environment: 
       POSTGRES_DB: ${DB_NAME}_test
-      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5431:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_test_data:/var/lib/postgresql/data
       - ./db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -56,9 +56,7 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DB_URL=postgres:5432/${DB_NAME}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_URL=redis://redis:6379
     depends_on:
@@ -80,15 +78,19 @@ services:
     ports:
       - "8002:8000"
     environment:
-      - DB_URL=postgres:5432/${DB_NAME}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       - REDIS_URL=redis://redis:6379
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
       - LANGSMITH_TRACING=${LANGSMITH_TRACING}
       - LANGSMITH_ENDPOINT=${LANGSMITH_ENDPOINT}
       - LANGSMITH_PROJECT=${LANGSMITH_PROJECT}
+      - JWKS_URL=${JWKS_URL}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_VERIFY_AUDIENCE=${JWT_VERIFY_AUDIENCE}
+      - JWT_VERIFY_EXPIRATION=${JWT_VERIFY_EXPIRATION}
+      - JWT_VERIFY_ISSUER=${JWT_VERIFY_ISSUER}
     depends_on:
       postgres:
         condition: service_healthy
@@ -108,9 +110,13 @@ services:
     ports:
       - "8003:8000"
     environment:
-      - DB_URL=postgres:5432/${DB_NAME}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - JWKS_URL=${JWKS_URL}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_VERIFY_AUDIENCE=${JWT_VERIFY_AUDIENCE}
+      - JWT_VERIFY_EXPIRATION=${JWT_VERIFY_EXPIRATION}
+      - JWT_VERIFY_ISSUER=${JWT_VERIFY_ISSUER}
     depends_on:
       postgres:
         condition: service_healthy
@@ -122,4 +128,5 @@ services:
 
 volumes:
   postgres_data:
+  postgres_test_data:
   redis_data:
