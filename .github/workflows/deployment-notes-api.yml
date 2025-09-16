@@ -1,0 +1,22 @@
+name: Notes API Deployment
+
+on: 
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with: 
+          version: 0.8.13
+      # - name: Install dependencies
+      #   run: uv sync
+      # - name: Run Ruff Check
+      #   run: uv run ruff check ./notes-api
+      # - name: Run Ruff Format Check
+      #   run: uv run ruff format --check ./notes-api
