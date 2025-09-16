@@ -66,4 +66,4 @@ jobs:
         run: docker load < notes-api.tar.gz 
       - 
         name: Run tests
-        run: docker run --rm notes-api:${{github.sha}} uv run pytest notes-api
+        run: docker run --rm notes-api:${{github.sha}} uv run pytest
