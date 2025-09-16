@@ -1,9 +1,9 @@
 from fastapi import Depends
+from note_rags_db import get_async_db_session
 from note_rags_db.schemas import Document
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from note_rags_db import get_async_db_session
 from app.models.note import Note, NoteCreate, NoteUpdate
 
 
