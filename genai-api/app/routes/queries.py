@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-
 from note_rags_db import get_async_db_session
+
 from app.models.query import Query, QueryResponse
 from app.services.query_service import answer_query, stream_query_response
 

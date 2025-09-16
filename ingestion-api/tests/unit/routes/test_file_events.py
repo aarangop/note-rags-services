@@ -9,9 +9,9 @@ import base64
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from note_rags_db import get_async_db_session
 from app.main import app
 from fastapi.testclient import TestClient
+from note_rags_db import get_async_db_session
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ This is a test markdown document with some content.
 ## Section 1
 Content for section 1.
 
-## Section 2 
+## Section 2
 Content for section 2.
 """
 
@@ -265,7 +265,7 @@ Content for section 2.
     def test_unicode_content_handling(self, client):
         """Test processing files with unicode characters."""
         # Arrange
-        unicode_content = """# Document with Unicode 
+        unicode_content = """# Document with Unicode
 
 Content with émojis 🎉 and special chars: àáâãäåæç
 

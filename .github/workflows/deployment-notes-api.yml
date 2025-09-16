@@ -18,6 +18,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --package notes-api
       - name: Run Ruff Check
-        run: uv run ruff check . 
+        run: uv run ruff check ./notes-api
       - name: Run Ruff Format Check
-        run: uv run ruff format --check .
+        run: uv run ruff format --check ./notes-api

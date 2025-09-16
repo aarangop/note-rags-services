@@ -1,10 +1,10 @@
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+from note_rags_db.config import DBConfig, build_database_url
 from pydantic import SecretStr, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-
-from note_rags_db.config import DBConfig, build_database_url
 
 
 class TestDBConfig:

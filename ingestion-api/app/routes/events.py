@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from note_rags_db import get_async_db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from note_rags_db import get_async_db_session
 from app.models.events import FileChangeEvent
 from app.models.responses import FileProcessingResponse
 from app.services.document_service import (
@@ -23,7 +23,9 @@ router = APIRouter(prefix="/file_events")
 
 
 @router.post("/", response_model=FileProcessingResponse)
-async def process_file_change(event: FileChangeEvent, db: AsyncSession = Depends(get_async_db_session)):
+async def process_file_change(
+    event: FileChangeEvent, db: AsyncSession = Depends(get_async_db_session)
+):
     """
     Process any file change event.
 
