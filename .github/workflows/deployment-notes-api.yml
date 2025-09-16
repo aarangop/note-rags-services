@@ -39,6 +39,7 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          load: true # Load image into local Docker daemon
           tags: |
             notes-api:latest
             notes-api:${{github.sha}}
