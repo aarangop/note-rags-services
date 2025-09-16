@@ -67,3 +67,36 @@ jobs:
       - 
         name: Run tests
         run: docker run --rm notes-api:${{github.sha}} uv run pytest
+  push:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      -
+        name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with: 
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::932439222048:role/GitHubActionsECRRole
+      -
+        name: Download image artifact
+        uses: actions/download-artifact@v4
+        with: 
+          name: notes-api-image
+      -
+        name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - 
+        name: Push docker image to ECR
+        env: 
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: note-rags-services
+        run: |
+          echo Registry=$REGISTRY 
+          docker load < notes-api.tar.gz
+          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:${{github.sha}}
+          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:latest
+          docker push $REGISTRY/$REPOSITORY:${{github.sha}}
+          docker push $REGISTRY/$REPOSITORY:latest
+          
