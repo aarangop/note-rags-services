@@ -1,3 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: postgres-persistent
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -8,6 +17,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: postgres-persistent
   resources:
     requests:
       storage: 5Gi
