@@ -30,6 +30,7 @@ class NotesService:
 
 
 def get_notes_service(
-    db: AsyncSession = Depends(get_async_db_session), repository: NotesRepository = Depends(get_notes_repository)
+    db: AsyncSession = Depends(get_async_db_session),
+    repository: NotesRepository = Depends(get_notes_repository),
 ):
     return NotesService(db, repository)
