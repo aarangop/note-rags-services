@@ -15,9 +15,26 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with: 
           version: 0.8.13
+          enable-cache: true
       - name: Install dependencies
         run: uv sync --package notes-api
       - name: Run Ruff Check
         run: uv run ruff check ./notes-api
       - name: Run Ruff Format Check
         run: uv run ruff format --check ./notes-api
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: notes-api/Dockerfile
+          push: false
+          tags: |
+            notes-api:latest
+            notes-api:${{github.sha}}
