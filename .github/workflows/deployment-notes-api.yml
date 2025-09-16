@@ -14,9 +14,9 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with: 
           version: 0.8.13
-      # - name: Install dependencies
-      #   run: uv sync
-      # - name: Run Ruff Check
-      #   run: uv run ruff check ./notes-api
-      # - name: Run Ruff Format Check
-      #   run: uv run ruff format --check ./notes-api
+      - name: Install dependencies
+        run: uv sync
+      - name: Run Ruff Check
+        run: uv run ruff check ./notes-api
+      - name: Run Ruff Format Check
+        run: uv run ruff format --check ./notes-api
