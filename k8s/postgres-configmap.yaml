@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: note-rags
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: "note_rags_db"

@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi[standard]>=0.116.1",
-    "uvicorn[standard]>=0.35.0",
     "pydantic>=2.11.7",
     "sqlalchemy>=2.0.41",
     "asyncpg>=0.30.0",
@@ -15,7 +14,6 @@ dependencies = [
     "greenlet>=3.2.3",
     "note-rags-db",
     "auth-lib",
-    "strawberry-graphql[fastapi]>=0.278.0",
 ]
 
 [build-system]

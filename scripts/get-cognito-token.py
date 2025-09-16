@@ -62,9 +62,7 @@ def copy_to_clipboard(text: str) -> bool:
             return True
         # Linux
         elif os.system("which xclip > /dev/null 2>&1") == 0:
-            subprocess.run(
-                ["xclip", "-selection", "clipboard"], input=text.encode(), check=True
-            )
+            subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode(), check=True)
             return True
     except subprocess.CalledProcessError:
         pass
@@ -77,9 +75,7 @@ def load_config():
 
     if not env_file.exists():
         print_colored(f"❌ Error: {env_file} file not found!", Colors.RED)
-        print_colored(
-            f"Please create {env_file} based on .env.auth.example", Colors.YELLOW
-        )
+        print_colored(f"Please create {env_file} based on .env.auth.example", Colors.YELLOW)
         sys.exit(1)
 
     print_colored(f"Loading configuration from {env_file}...", Colors.YELLOW)
@@ -182,9 +178,7 @@ def authenticate_with_cognito(config, new_password: str | None = None):
         # Handle challenges (like NEW_PASSWORD_REQUIRED)
         if "ChallengeName" in response:
             if response["ChallengeName"] == "NEW_PASSWORD_REQUIRED":
-                print_colored(
-                    "🔒 User must set a new permanent password", Colors.YELLOW
-                )
+                print_colored("🔒 User must set a new permanent password", Colors.YELLOW)
 
                 # Use provided password or generate a secure one
                 if new_password:
@@ -205,14 +199,15 @@ def authenticate_with_cognito(config, new_password: str | None = None):
 
                 if config["COGNITO_CLIENT_SECRET"]:
                     challenge_params["SECRET_HASH"] = auth_parameters["SECRET_HASH"]
-                
+
                 # Handle required attributes from the challenge
                 required_attrs = response.get("ChallengeParameters", {}).get("requiredAttributes")
                 if required_attrs:
                     import ast
+
                     required_attrs_list = ast.literal_eval(required_attrs)
                     print_colored(f"Required attributes: {required_attrs_list}", Colors.YELLOW)
-                    
+
                     # Add required attributes with default values
                     for attr in required_attrs_list:
                         if attr == "userAttributes.name":
@@ -231,12 +226,18 @@ def authenticate_with_cognito(config, new_password: str | None = None):
                     )
                 except ClientError as challenge_error:
                     print_colored("❌ Challenge response failed:", Colors.RED)
-                    print(f"Error: {challenge_error.response['Error']['Code']} - {challenge_error.response['Error']['Message']}")
-                    print(f"Challenge parameters received: {response.get('ChallengeParameters', {})}")
+                    print(
+                        f"Error: {challenge_error.response['Error']['Code']} - {challenge_error.response['Error']['Message']}"
+                    )
+                    print(
+                        f"Challenge parameters received: {response.get('ChallengeParameters', {})}"
+                    )
                     print()
                     print("This might be because your User Pool requires additional attributes.")
                     print("Try setting a permanent password manually in the AWS Console:")
-                    print("1. Go to AWS Cognito → Users → [your-user] → Actions → Set permanent password")
+                    print(
+                        "1. Go to AWS Cognito → Users → [your-user] → Actions → Set permanent password"
+                    )
                     sys.exit(1)
 
                 print_colored("✅ Password set as permanent", Colors.GREEN)
@@ -244,12 +245,8 @@ def authenticate_with_cognito(config, new_password: str | None = None):
                 # Return both the auth result and the new password for display
                 return challenge_response["AuthenticationResult"], permanent_password
             else:
-                print_colored(
-                    f"❌ Unhandled challenge: {response['ChallengeName']}", Colors.RED
-                )
-                print(
-                    f"Challenge parameters: {response.get('ChallengeParameters', {})}"
-                )
+                print_colored(f"❌ Unhandled challenge: {response['ChallengeName']}", Colors.RED)
+                print(f"Challenge parameters: {response.get('ChallengeParameters', {})}")
                 sys.exit(1)
 
         # No challenge, return auth result with no password change
@@ -288,14 +285,10 @@ def authenticate_with_cognito(config, new_password: str | None = None):
 
 @click.command()
 @click.option(
-    "--new-password", 
-    help="New permanent password to set (if user needs password change). If not provided, a secure password will be generated."
+    "--new-password",
+    help="New permanent password to set (if user needs password change). If not provided, a secure password will be generated.",
 )
-@click.option(
-    "--debug", 
-    is_flag=True, 
-    help="Show decoded token claims for debugging"
-)
+@click.option("--debug", is_flag=True, help="Show decoded token claims for debugging")
 def main(new_password, debug):
     """AWS Cognito Token Generator - Get JWT tokens for API testing."""
     print_colored("🔐 AWS Cognito Token Generator", Colors.BLUE)
@@ -314,14 +307,17 @@ def main(new_password, debug):
 
     print_colored("✅ Authentication successful!", Colors.GREEN)
     print()
-    
+
     # Show new password if it was changed
     if changed_password:
         print_colored("🔑 New Password Information:", Colors.GREEN)
         print(f"Your permanent password is now: {changed_password}")
-        print_colored("⚠️  Save this password! Update your .env.auth file with the new password.", Colors.YELLOW)
+        print_colored(
+            "⚠️  Save this password! Update your .env.auth file with the new password.",
+            Colors.YELLOW,
+        )
         print()
-        
+
     print_colored("Access Token (use this for API authorization):", Colors.GREEN)
     print(f"Bearer {access_token}")
     print()
@@ -360,9 +356,7 @@ def main(new_password, debug):
             print_colored("🔍 Token Claims (Debug Info):", Colors.BLUE)
             print(json.dumps(decoded, indent=2, default=str))
         except ImportError:
-            print_colored(
-                "Install PyJWT to see token claims: pip install PyJWT", Colors.YELLOW
-            )
+            print_colored("Install PyJWT to see token claims: pip install PyJWT", Colors.YELLOW)
 
 
 if __name__ == "__main__":

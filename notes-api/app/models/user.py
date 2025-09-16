@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 class UserResponse(BaseModel):
     """Response model for user information."""
-    
+
     id: uuid.UUID
     cognito_user_id: str
     email: str
@@ -27,7 +27,7 @@ class UserResponse(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     """Request model for updating user profile."""
-    
+
     email: str | None = None
     username: str | None = None
     full_name: str | None = None
@@ -35,7 +35,7 @@ class ProfileUpdateRequest(BaseModel):
 
 class UserRegistrationRequest(BaseModel):
     """Request model for user registration with profile data."""
-    
+
     email: str
     username: str | None = None
     full_name: str | None = None

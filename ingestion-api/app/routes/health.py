@@ -1,12 +1,12 @@
 import enum
 
 from fastapi import APIRouter, Depends
+from note_rags_db import get_async_db_session
 from openai import AuthenticationError
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from note_rags_db import get_async_db_session
 from app.services.embeddings import get_embeddings
 
 router = APIRouter(prefix="/health")

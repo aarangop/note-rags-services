@@ -54,7 +54,7 @@ services:
       dockerfile: ./ingestion-api/Dockerfile
     container_name: note-rags-ingestion-api
     ports:
-      - "8001:8001"
+      - "8001:8000"
     environment:
       - DB_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}

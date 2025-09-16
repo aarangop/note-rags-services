@@ -1,13 +1,13 @@
 import uuid
 
 from fastapi import Depends
+from note_rags_db import get_async_db_session
 from note_rags_db.schemas.conversation import Conversation as ConversationSchema
 from note_rags_db.schemas.conversation import Message as MessageSchema
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from note_rags_db import get_async_db_session
 from app.models.conversation import Conversation, ConversationCreate, ConversationUpdate
 
 
