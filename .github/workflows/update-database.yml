@@ -1,0 +1,12 @@
+name: Update Database
+
+on: 
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+    run-migrations:
+        runs-on: ubuntu-latest
+        
