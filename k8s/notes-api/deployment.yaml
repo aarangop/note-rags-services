@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-api
+  namespace: note-rags
+spec:
+  selector:
+    matchLabels:
+      app: notes-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: notes-api
+    spec:
+      serviceAccountName: notes-api-serviceaccount
+      containers:
+      - name: notes-api
+        image: 932439222048.dkr.ecr.us-east-1.amazonaws.com/note-rags-dev-services:notes-api-latest
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: notes-api-secrets
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: notes-api-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: notes-api-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: notes-api-secrets
+              key: DB_NAME
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: notes-api-secrets
+              key: DB_PORT

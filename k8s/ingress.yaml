@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: note-rags-ingress
+  namespace: note-rags
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+  labels:
+    app.kubernetes.io/name: note-rags-ingress
+spec:
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+        - path: /notes
+          pathType: Prefix
+          backend:
+            service: 
+              name: notes-api-service
+              port:
+                number: 80
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: notes-api-service
+              port:
+                number: 80
