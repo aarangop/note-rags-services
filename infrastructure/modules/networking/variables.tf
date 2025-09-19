@@ -24,8 +24,3 @@ variable "az_count" {
   type        = number
 }
 
-variable "db_az_count" {
-  description = "Number of AZs for database subnets (minimum 2 required by AWS)"
-  type        = number
-  default     = 2
-}

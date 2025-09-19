@@ -8,7 +8,6 @@ module "networking" {
   # Networking args
   vpc_cidr    = var.vpc_cidr
   az_count    = var.az_count
-  db_az_count = var.db_az_count
 }
 
 module "security" {
@@ -57,4 +56,31 @@ module "bastion" {
   vpc_id            = module.networking.vpc_id
   public_subnet_id  = module.networking.public_subnet_ids[0]
   db_endpoint       = module.database.db_instance_endpoint
+}
+
+module "eks" {
+  source = "./modules/eks"
+  count  = var.create_eks ? 1 : 0
+
+  # Base args
+  prefix      = var.prefix
+  environment = var.environment
+  region      = var.region
+
+  # Networking args
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_subnet_ids
+  public_subnet_ids  = module.networking.public_subnet_ids
+
+  # Database connectivity
+  db_security_group_id = module.database.db_security_group_id
+
+  # EKS configuration
+  cluster_version                     = var.cluster_version
+  node_group_instance_types           = var.node_group_instance_types
+  node_group_desired_size             = var.node_group_desired_size
+  node_group_max_size                 = var.node_group_max_size
+  node_group_min_size                 = var.node_group_min_size
+  enable_irsa                         = true
+  enable_aws_load_balancer_controller = true
 }

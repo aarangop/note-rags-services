@@ -53,3 +53,14 @@ output "db_instance_endpoint" {
   description = "Database's private endpoint"
   value       = module.database.db_instance_endpoint
 }
+
+# EKS
+output "eks_cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = var.create_eks ? module.eks[0].cluster_endpoint : null
+}
+
+output "eks_cluster_secrets_manager_role_arn" {
+  description = "EKS cluster's Secrets Manager role ARN"
+  value       = var.create_eks ? module.eks[0].secrets_manager_role_arn : null
+}

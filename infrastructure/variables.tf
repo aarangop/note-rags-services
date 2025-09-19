@@ -30,14 +30,9 @@ variable "vpc_cidr" {
 variable "az_count" {
   description = "Availability zone count"
   type        = number
-  default     = 1
-}
-
-variable "db_az_count" {
-  description = "Number of AZs for database subnets (minimum 2 required by AWS)"
-  type        = number
   default     = 2
 }
+
 
 # Security
 variable "github_org" {
@@ -94,4 +89,41 @@ variable "allowed_ssh_cidrs" {
   description = "CIDR blocks allowed to SSH to bastion"
   type        = list(string)
   default     = ["0.0.0.0/0"]
+}
+
+# EKS
+variable "create_eks" {
+  description = "Whether to create EKS cluster"
+  type        = bool
+  default     = false
+}
+
+variable "cluster_version" {
+  description = "Kubernetes version for the EKS cluster"
+  type        = string
+  default     = "1.31"
+}
+
+variable "node_group_instance_types" {
+  description = "Instance types for EKS managed node group"
+  type        = list(string)
+  default     = ["t3.small"]
+}
+
+variable "node_group_desired_size" {
+  description = "Desired number of nodes in the EKS node group"
+  type        = number
+  default     = 2
+}
+
+variable "node_group_max_size" {
+  description = "Maximum number of nodes in the EKS node group"
+  type        = number
+  default     = 4
+}
+
+variable "node_group_min_size" {
+  description = "Minimum number of nodes in the EKS node group"
+  type        = number
+  default     = 1
 }

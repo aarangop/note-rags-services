@@ -52,11 +52,11 @@ resource "aws_subnet" "private" {
 
 # Database Subnets (isolated for RDS)
 resource "aws_subnet" "database" {
-  count = var.db_az_count
+  count = var.az_count
 
   vpc_id = aws_vpc.main.id
   cidr_block = cidrsubnet(var.vpc_cidr, 4, count.index +
-  (var.db_az_count * 2))
+  (var.az_count * 2))
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
