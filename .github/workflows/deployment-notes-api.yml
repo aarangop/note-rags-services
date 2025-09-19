@@ -85,8 +85,8 @@ jobs:
         run: |
           echo Registry=$REGISTRY 
           docker load < notes-api.tar.gz
-          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:${{github.sha}}
-          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:latest
+          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:notes-api:${{github.sha}}
+          docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:notes-api:latest
           docker push $REGISTRY/$REPOSITORY:${{github.sha}}
           docker push $REGISTRY/$REPOSITORY:latest
           
