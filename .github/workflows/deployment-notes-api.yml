@@ -87,6 +87,6 @@ jobs:
           docker load < notes-api.tar.gz
           docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:notes-api-${{github.sha}}
           docker tag notes-api:${{github.sha}} $REGISTRY/$REPOSITORY:notes-api-latest
-          docker push $REGISTRY/$REPOSITORY:${{github.sha}}
-          docker push $REGISTRY/$REPOSITORY:latest
+          docker push $REGISTRY/$REPOSITORY:notes-api-${{github.sha}}
+          docker push $REGISTRY/$REPOSITORY:notes-api-latest
           
